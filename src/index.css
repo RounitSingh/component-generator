@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 
-/* Custom base styles */
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -16,7 +15,6 @@
   }
 }
 
-/* Custom component styles */
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200;
@@ -39,7 +37,6 @@
   }
 }
 
-/* Custom utility styles */
 @layer utilities {
   .animate-in {
     animation: fadeInUp 0.2s ease-out;

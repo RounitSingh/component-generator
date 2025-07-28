@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SketchPicker } from 'react-color';
 
-/**
- * PropertyPanel - Floating panel for editing element styles and content.
- * Props:
- * - target: { id, type, props, style, content } - element info
- * - onChange: (updated) => void - callback for live updates
- * - onClose: () => void - close panel
- */
 const PropertyPanel = ({ target, onChange, onClose }) => {
   const [localProps, setLocalProps] = useState({ ...target.props });
   const [localStyle, setLocalStyle] = useState({ ...target.style });
@@ -16,13 +9,11 @@ const PropertyPanel = ({ target, onChange, onClose }) => {
   const [showTextColor, setShowTextColor] = useState(false);
 
   useEffect(() => {
-    // Sync local state with target changes
     setLocalProps({ ...target.props });
     setLocalStyle({ ...target.style });
     setContent(target.content || '');
   }, [target]);
 
-  // Unified update handler
   const update = (changes) => {
     const updated = {
       ...target,
@@ -38,8 +29,6 @@ const PropertyPanel = ({ target, onChange, onClose }) => {
     onChange(updated);
   };
 
-  // Controls
-  // Helper to extract shadow px value
   const getShadowPx = (shadow) => {
     if (!shadow) {
       return 0;
@@ -52,9 +41,8 @@ const PropertyPanel = ({ target, onChange, onClose }) => {
     <div className="fixed z-50 bg-white shadow-xl rounded-lg p-4 border top-20 left-1/2 -translate-x-1/2 min-w-[320px] max-w-[90vw]" style={{ minWidth: 320 }}>
       <div className="flex justify-between items-center mb-2">
         <div className="font-bold text-lg">Edit {target.type}</div>
-        <button className="btn btn-sm btn-outline" onClick={onClose}>✕</button>
+        <button className="btn btn-sm btn-outline" onClick={onClose}> ✕</button>
       </div>
-      {/* Size Controls */}
       <div className="mb-3">
         <label className="block text-sm font-medium mb-1">Font Size</label>
         <input type="range" min="10" max="64" value={localStyle.fontSize !== undefined ? localStyle.fontSize : 16}
@@ -69,7 +57,6 @@ const PropertyPanel = ({ target, onChange, onClose }) => {
         />
         <span className="ml-2 text-xs">{localStyle.padding !== undefined ? localStyle.padding : 8}px</span>
       </div>
-      {/* Color Pickers */}
       <div className="mb-3 flex gap-2 items-center">
         <label className="block text-sm font-medium">Background</label>
         <button className="w-6 h-6 rounded border" style={{ background: localStyle.background || '#fff' }}
@@ -94,14 +81,12 @@ const PropertyPanel = ({ target, onChange, onClose }) => {
           </div>
         )}
       </div>
-      {/* Text Content */}
       <div className="mb-3">
         <label className="block text-sm font-medium mb-1">Text Content</label>
         <input type="text" className="input w-full" value={content}
           onChange={e => update({ content: e.target.value })}
         />
       </div>
-      {/* Border, Shadow, Radius */}
       <div className="mb-3 flex gap-2">
         <div>
           <label className="block text-sm font-medium mb-1">Border</label>

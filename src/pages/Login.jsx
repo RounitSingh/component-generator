@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import api, { getProfile } from '../utils/api';
+import useAuthStore from '../store/authStore';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -9,7 +11,9 @@ const Login = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { setUser, setTokens } = useAuthStore();
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -17,21 +21,35 @@ const Login = () => {
       ...prev,
       [name]: value,
     }));
+    // console.log('Form Change:', { name, value, formData: { ...formData, [name]: value } });
   };
 
   const handleSubmit = async e => {
     e.preventDefault();
     setIsLoading(true);
-
-    // TODO: Implement actual login logic here
-    console.log('Login attempt:', formData);
-
-    // Simulate API call
-    setTimeout(() => {
+    setError('');
+    console.log('Submitting form with:', formData);
+    try {
+      const res = await api.post('/api/auth/login', formData);
+      console.log('API Response:', JSON.stringify(res.data.data, null, 2));
+      const { accessToken, refreshToken } = res.data.data;
+      setTokens(accessToken, refreshToken);
+      localStorage.setItem('accessToken', accessToken);
+      if (refreshToken) {
+        localStorage.setItem('refreshToken', refreshToken);
+      }
+      // Hydrate user state
+      const user = await getProfile();
+      setUser(user);
       setIsLoading(false);
-      // For now, just navigate to home
-      navigate('/');
-    }, 1000);
+      navigate('/chatbot', { replace: true });
+    } catch (err) {
+      setIsLoading(false);
+      console.log('Login Error:', err);
+      setError(
+        err.response?.data?.message || 'Login failed. Please try again.'
+      );
+    }
   };
 
   return (
@@ -51,7 +69,6 @@ const Login = () => {
             </Link>
           </p>
         </div>
-
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
@@ -78,7 +95,6 @@ const Login = () => {
                 />
               </div>
             </div>
-
             <div>
               <label
                 htmlFor="password"
@@ -115,7 +131,9 @@ const Login = () => {
               </div>
             </div>
           </div>
-
+          {error && (
+            <div className="text-red-600 text-sm text-center">{error}</div>
+          )}
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input
@@ -131,7 +149,6 @@ const Login = () => {
                 Remember me
               </label>
             </div>
-
             <div className="text-sm">
               <a
                 href="#"
@@ -141,7 +158,6 @@ const Login = () => {
               </a>
             </div>
           </div>
-
           <div>
             <button
               type="submit"

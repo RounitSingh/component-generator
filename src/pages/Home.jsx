@@ -5,7 +5,6 @@ import { Home as HomeIcon, BookOpen, Users, Star } from 'lucide-react';
 const Home = () => {
   return (
     <div className="max-w-6xl mx-auto">
-      {/* Hero Section */}
       <div className="text-center py-16">
         <div className="flex justify-center mb-6">
           <HomeIcon className="w-16 h-16 text-blue-600" />
@@ -32,8 +31,6 @@ const Home = () => {
           </Link>
         </div>
       </div>
-
-      {/* Features Section */}
       <div className="grid md:grid-cols-3 gap-8 py-16">
         <div className="text-center p-6 bg-white rounded-lg shadow-md">
           <BookOpen className="w-12 h-12 text-blue-600 mx-auto mb-4" />

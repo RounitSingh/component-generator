@@ -1,20 +1,21 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, Check } from 'lucide-react';
+import api, { getProfile } from '../utils/api';
+import useAuthStore from '../store/authStore';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
     firstName: '',
-    lastName: '',
     email: '',
     password: '',
-    confirmPassword: '',
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { setUser, setTokens } = useAuthStore();
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -22,8 +23,6 @@ const Signup = () => {
       ...prev,
       [name]: value,
     }));
-
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -34,55 +33,64 @@ const Signup = () => {
 
   const validateForm = () => {
     const newErrors = {};
-
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'First name is required';
     }
-
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
-    }
-
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
     }
-
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async e => {
     e.preventDefault();
-
     if (!validateForm()) {
       return;
     }
-
     setIsLoading(true);
-
-    // TODO: Implement actual signup logic here
-    console.log('Signup attempt:', formData);
-
-    // Simulate API call
-    setTimeout(() => {
+    setError('');
+    try {
+      const res = await api.post('/api/auth/signup', {
+        name: formData.firstName,
+        email: formData.email,
+        password: formData.password,
+      });
+      const { accessToken, refreshToken } = res.data.data;
+      setTokens(accessToken, refreshToken);
+      localStorage.setItem('accessToken', accessToken);
+      if (refreshToken) {
+        localStorage.setItem('refreshToken', refreshToken);
+      }
+      // Hydrate user state
+      const user = await getProfile();
+      setUser(user);
+      // Create a default session for the new user
+      try {
+        // You can customize the title/description as needed
+        await api.createSession({
+          title: 'My First Session',
+          description: 'Welcome! This is your first session.'
+        });
+      } catch (sessionErr) {
+        // Optionally handle session creation error
+        console.error('Session creation failed:', sessionErr);
+      }
       setIsLoading(false);
-      // For now, just navigate to login
       navigate('/login');
-    }, 1000);
+    } catch (err) {
+      setIsLoading(false);
+      setError(
+        err.response?.data?.message || 'Signup failed. Please try again.'
+      );
+    }
   };
 
   return (
@@ -102,7 +110,6 @@ const Signup = () => {
             </Link>
           </p>
         </div>
-
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -137,38 +144,7 @@ const Signup = () => {
                   </p>
                 )}
               </div>
-
-              <div>
-                <label
-                  htmlFor="lastName"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Last name
-                </label>
-                <div className="mt-1 relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="lastName"
-                    name="lastName"
-                    type="text"
-                    autoComplete="family-name"
-                    required
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    className={`appearance-none relative block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm ${
-                      errors.lastName ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    placeholder="Last name"
-                  />
-                </div>
-                {errors.lastName && (
-                  <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
-                )}
-              </div>
             </div>
-
             <div>
               <label
                 htmlFor="email"
@@ -198,7 +174,6 @@ const Signup = () => {
                 <p className="mt-1 text-sm text-red-600">{errors.email}</p>
               )}
             </div>
-
             <div>
               <label
                 htmlFor="password"
@@ -239,53 +214,10 @@ const Signup = () => {
                 <p className="mt-1 text-sm text-red-600">{errors.password}</p>
               )}
             </div>
-
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Confirm password
-              </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className={`appearance-none relative block w-full pl-10 pr-10 py-2 border rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm ${
-                    errors.confirmPassword
-                      ? 'border-red-300'
-                      : 'border-gray-300'
-                  }`}
-                  placeholder="Confirm your password"
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400" />
-                  )}
-                </button>
-              </div>
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.confirmPassword}
-                </p>
-              )}
-            </div>
           </div>
-
+          {error && (
+            <div className="text-red-600 text-sm text-center">{error}</div>
+          )}
           <div className="flex items-center">
             <input
               id="agree-terms"
@@ -308,7 +240,6 @@ const Signup = () => {
               </a>
             </label>
           </div>
-
           <div>
             <button
               type="submit"

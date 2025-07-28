@@ -36,11 +36,9 @@ const styles = {
 
 const IncrementButton = () => {
   const [count, setCount] = React.useState(0)
- 
   const incrementCount = () => {
     setCount((prevCount) => prevCount + 1)
   }
-  
   return (
     <div style={styles.container}>
       <p style={styles.countText}>Count: {count}</p>
