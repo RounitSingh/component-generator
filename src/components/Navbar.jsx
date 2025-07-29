@@ -31,7 +31,7 @@ const Navbar = () => {
     <nav className="bg-white shadow mb-4">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <Link to="/" className="text-xl font-bold text-blue-600">
-          TesyBook
+          Component Generator
         </Link>
         <div>
           {user ? (
