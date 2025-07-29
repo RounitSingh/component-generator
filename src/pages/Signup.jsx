@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, Check } from 'lucide-react';
-import api, { getProfile } from '../utils/api';
+import api, { getProfile, createSession } from '../utils/api';
 import useAuthStore from '../store/authStore';
 
 const Signup = () => {
@@ -19,6 +19,7 @@ const Signup = () => {
 
   const handleChange = e => {
     const { name, value } = e.target;
+    console.log('Field changed:', name, 'Value:', value);
     setFormData(prev => ({
       ...prev,
       [name]: value,
@@ -63,6 +64,7 @@ const Signup = () => {
         email: formData.email,
         password: formData.password,
       });
+      console.log('Signup API response:', res.data.data);
       const { accessToken, refreshToken } = res.data.data;
       setTokens(accessToken, refreshToken);
       localStorage.setItem('accessToken', accessToken);
@@ -74,14 +76,15 @@ const Signup = () => {
       setUser(user);
       // Create a default session for the new user
       try {
-        // You can customize the title/description as needed
-        await api.createSession({
+        await createSession({
           title: 'My First Session',
           description: 'Welcome! This is your first session.'
         });
-      } catch (sessionErr) {
-        // Optionally handle session creation error
-        console.error('Session creation failed:', sessionErr);
+      } catch (err) {
+        console.error('Session creation failed:', err, err?.response?.data);
+        setError('Session creation failed. Please try again.');
+        setIsLoading(false);
+        return;
       }
       setIsLoading(false);
       navigate('/login');

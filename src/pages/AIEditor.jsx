@@ -110,7 +110,7 @@ const AIEditor = ({ sessionId }) => {
     }
     setLoading(true);
     setError('');
-    const promptMsg = { role: 'user', content: userPrompt, messageType: 'text', metadata: {} };
+    const promptMsg = { role: 'user', content: userPrompt, message_type: 'text', metadata: {} };
     try {
       // Save user message
       if (sessionId) {
@@ -136,8 +136,8 @@ const AIEditor = ({ sessionId }) => {
         await saveSessionInteraction(sessionId, {
           prompt: userPrompt,
           response: output,
-          interactionType: 'generation',
-          targetElement: null,
+          interaction_type: 'component_generation',
+          target_element: null,
           metadata: {},
         });
       }
@@ -148,9 +148,9 @@ const AIEditor = ({ sessionId }) => {
       if (sessionId && parsed.jsx && parsed.css) {
         await saveSessionComponent(sessionId, {
           name: 'AIComponent',
-          jsxCode: parsed.jsx,
-          cssCode: parsed.css,
-          componentType: 'generated',
+          jsx_code: parsed.jsx,
+          css_code: parsed.css,
+          component_type: 'generated',
           metadata: {},
         });
         addComponent({ name: 'AIComponent', jsxCode: parsed.jsx, cssCode: parsed.css, componentType: 'generated', metadata: {} });
