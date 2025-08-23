@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { duotoneSpace } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Download, Copy, Send, Image as ImageIcon, Save, Loader2, AlertCircle } from 'lucide-react';
+import { Download, Copy, Send, Image as ImageIcon, Save, Loader2, AlertCircle, StarsIcon } from 'lucide-react';
 import useChatStore from '../store/chatStore';
 import useComponentStore from '../store/componentStore';
 import { generateComponentWithGemini } from '../utils/geminiApi';
@@ -474,11 +474,11 @@ const AIEditor = ({ sessionId, createNewSession = false }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 grid grid-cols-1 md:grid-cols-4">
+    <div className="h-screen   p-4 gap-4 grid grid-cols-1 md:grid-cols-4">
       {/* Chat Panel */}
-      <div className="md:col-span-1 w-full p-6 flex flex-col border border-red-600 max-h-screen overflow-y-auto bg-white/80">
+      <div className="md:col-span-1 w-full  p-6  flex flex-col  rounded-2xl border-gray-200  drop-shadow-lg max-h-screen overflow-y-auto bg-white">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold text-blue-700">AI Component Generator</h2>
+          <h2 className="text-2xl flex flex-row gap-2 font-bold text-blue-700"><span className="rounded-lg bg-blue-500 p-2"><StarsIcon className='h-5 w-5 text-blue-50'/ ></span> AI Assistant</h2>
           {sessionId && (
             <PersistenceStatus
               isSaving={isSaving}
@@ -578,7 +578,7 @@ const AIEditor = ({ sessionId, createNewSession = false }) => {
       </div>
 
       {/* Preview/Code Panel */}
-      <div className="md:col-span-3 w-full p-6 max-h-screen overflow-y-hidden flex flex-col bg-white/90">
+      <div className="md:col-span-3  rounded-2xl  w-full p-6 max-h-screen overflow-y-hidden  drop-shadow-lg flex flex-col bg-white">
         <div className="flex gap-2 mb-4 border-b border-gray-200">
           <button
             className={`px-4 py-2 font-semibold border-b-2 transition-colors ${
