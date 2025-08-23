@@ -40,7 +40,7 @@ const App = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <main className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 ">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -54,7 +54,7 @@ const App = () => {
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </main>
+      </div>
     </div>
   );
 };
