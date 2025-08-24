@@ -42,7 +42,7 @@ const Navbar = () => {
             Component Generator
           </Link>
 
-          {/* Desktop Menu */}
+        
           <div className="hidden md:flex">
             {user ? (
               <div className="flex items-center space-x-4">
