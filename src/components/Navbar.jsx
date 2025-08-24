@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
+import { StarsIcon } from 'lucide-react';
 
 // Utility to generate a color from a string (user name)
 function stringToColor(str) {
@@ -38,8 +39,10 @@ const Navbar = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <Link to="/" className="text-xl font-bold text-blue-600">
-            Component Generator
+          <Link to="/" className=" flex flex-row gap-2 ">
+            <span className="rounded-xl bg-blue-500 p-2">
+                    <StarsIcon className='h-5 w-5 text-blue-50'/>
+                    </span><span className="text-3xl font-bold text-blue-600">GenUI</span> 
           </Link>
 
         
