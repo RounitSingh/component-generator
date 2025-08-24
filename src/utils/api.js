@@ -72,10 +72,31 @@ api.interceptors.response.use(
   }
 );
 
+// Helper function to handle API responses
+const handleApiResponse = (response) => {
+  if (response.data && response.data.success !== undefined) {
+    return response.data.data || response.data;
+  }
+  return response.data;
+};
+
+// Helper function to handle API errors
+const handleApiError = (error) => {
+  if (error.response && error.response.data) {
+    const errorMessage = error.response.data.message || error.response.data.error || 'An error occurred';
+    throw new Error(errorMessage);
+  }
+  throw new Error(error.message || 'Network error occurred');
+};
+
 export const getProfile = async () => {
-  const res = await api.get('/api/auth/profile');
-  console.log(JSON.stringify(res.data.data, null, 2));
-  return res.data.data;
+  try {
+    const res = await api.get('/api/auth/profile');
+    console.log('Profile response:', JSON.stringify(res.data, null, 2));
+    return handleApiResponse(res);
+  } catch (error) {
+    handleApiError(error);
+  }
 };
 
 export const refreshToken = async () => {
@@ -83,79 +104,172 @@ export const refreshToken = async () => {
   if (!refreshTokenValue) {
     throw new Error('No refresh token');
   }
-  const res = await api.post('/api/auth/refresh-token', { refreshToken: refreshTokenValue });
-  console.log(JSON.stringify(res.data.data, null, 2));
-  localStorage.setItem('accessToken', res.data.data.accessToken);
-  if (res.data.data.refreshToken) {
-    localStorage.setItem('refreshToken', res.data.data.refreshToken);
+  try {
+    const res = await api.post('/api/auth/refresh-token', { refreshToken: refreshTokenValue });
+    console.log('Refresh token response:', JSON.stringify(res.data, null, 2));
+    const data = handleApiResponse(res);
+    localStorage.setItem('accessToken', data.accessToken);
+    if (data.refreshToken) {
+      localStorage.setItem('refreshToken', data.refreshToken);
+    }
+    return data.accessToken;
+  } catch (error) {
+    handleApiError(error);
   }
-  return res.data.data.accessToken;
 };
 
 export const getSessions = async () => {
-  const res = await api.get('/api/sessions');
-  console.log(JSON.stringify(res.data.data, null, 2));
-  return res.data.data;
+  try {
+    const res = await api.get('/api/sessions');
+    console.log('Sessions response:', JSON.stringify(res.data, null, 2));
+    return handleApiResponse(res);
+  } catch (error) {
+    handleApiError(error);
+  }
 };
 
 export const getSessionById = async (sessionId) => {
-  const res = await api.get(`/api/sessions/${sessionId}`);
-  console.log(JSON.stringify(res.data.data, null, 2));
-  return res.data.data;
+  try {
+    const res = await api.get(`/api/sessions/${sessionId}`);
+    console.log('Session by ID response:', JSON.stringify(res.data, null, 2));
+    return handleApiResponse(res);
+  } catch (error) {
+    handleApiError(error);
+  }
 };
 
 export const createSession = async (sessionData) => {
-  const res = await api.post('/api/sessions', sessionData);
-  console.log(JSON.stringify(res.data.data, null, 2));
-  return res.data.data;
+  try {
+    const res = await api.post('/api/sessions', sessionData);
+    console.log('Create session response:', JSON.stringify(res.data, null, 2));
+    return handleApiResponse(res);
+  } catch (error) {
+    handleApiError(error);
+  }
 };
 
 export const updateSession = async (sessionId, updateData) => {
-  const res = await api.put(`/api/sessions/${sessionId}`, updateData);
-  console.log(JSON.stringify(res.data.data, null, 2));
-  return res.data.data;
+  try {
+    const res = await api.put(`/api/sessions/${sessionId}`, updateData);
+    console.log('Update session response:', JSON.stringify(res.data, null, 2));
+    return handleApiResponse(res);
+  } catch (error) {
+    handleApiError(error);
+  }
 };
 
 export const deleteSession = async (sessionId) => {
-  const res = await api.delete(`/api/sessions/${sessionId}`);
-  console.log(JSON.stringify(res.data.data, null, 2));
-  return res.data.data;
+  try {
+    const res = await api.delete(`/api/sessions/${sessionId}`);
+    console.log('Delete session response:', JSON.stringify(res.data, null, 2));
+    return handleApiResponse(res);
+  } catch (error) {
+    handleApiError(error);
+  }
 };
 
 // Chat messages
 export const getSessionMessages = async (sessionId) => {
-  const res = await api.get(`/api/sessions/${sessionId}/messages`);
-  console.log(JSON.stringify(res.data.data, null, 2));
-  return res.data.data;
+  try {
+    const res = await api.get(`/api/sessions/${sessionId}/messages`);
+    console.log('Get session messages response:', JSON.stringify(res.data, null, 2));
+    return handleApiResponse(res);
+  } catch (error) {
+    console.error('Failed to get session messages:', error);
+    handleApiError(error);
+  }
 };
+
 export const addSessionMessage = async (sessionId, message) => {
-  const res = await api.post(`/api/sessions/${sessionId}/messages`, message);
-  console.log(JSON.stringify(res.data.data, null, 2));
-  return res.data.data;
+  try {
+    const res = await api.post(`/api/sessions/${sessionId}/messages`, message);
+    console.log('Add session message response:', JSON.stringify(res.data, null, 2));
+    return handleApiResponse(res);
+  } catch (error) {
+    console.error('Failed to add session message:', error);
+    handleApiError(error);
+  }
 };
 
 // Components
 export const getSessionComponents = async (sessionId) => {
-  const res = await api.get(`/api/sessions/${sessionId}/components`);
-  console.log(JSON.stringify(res.data.data, null, 2));
-  return res.data.data;
+  try {
+    const res = await api.get(`/api/sessions/${sessionId}/components`);
+    console.log('Get session components response:', JSON.stringify(res.data, null, 2));
+    return handleApiResponse(res);
+  } catch (error) {
+    console.error('Failed to get session components:', error);
+    handleApiError(error);
+  }
 };
+
 export const saveSessionComponent = async (sessionId, component) => {
-  const res = await api.post(`/api/sessions/${sessionId}/components`, component);
-  console.log(JSON.stringify(res.data.data, null, 2));
-  return res.data.data;
+  try {
+    const res = await api.post(`/api/sessions/${sessionId}/components`, component);
+    console.log('Save session component response:', JSON.stringify(res.data, null, 2));
+    return handleApiResponse(res);
+  } catch (error) {
+    console.error('Failed to save session component:', error);
+    handleApiError(error);
+  }
 };
 
 // AI Interactions
 export const getSessionInteractions = async (sessionId) => {
-  const res = await api.get(`/api/sessions/${sessionId}/interactions`);
-  console.log(JSON.stringify(res.data.data, null, 2));
-  return res.data.data;
+  try {
+    const res = await api.get(`/api/sessions/${sessionId}/interactions`);
+    console.log('Get session interactions response:', JSON.stringify(res.data, null, 2));
+    return handleApiResponse(res);
+  } catch (error) {
+    console.error('Failed to get session interactions:', error);
+    handleApiError(error);
+  }
 };
+
 export const saveSessionInteraction = async (sessionId, interaction) => {
-  const res = await api.post(`/api/sessions/${sessionId}/interactions`, interaction);
-  console.log(JSON.stringify(res.data.data, null, 2));
-  return res.data.data;
+  try {
+    const res = await api.post(`/api/sessions/${sessionId}/interactions`, interaction);
+    console.log('Save session interaction response:', JSON.stringify(res.data, null, 2));
+    return handleApiResponse(res);
+  } catch (error) {
+    console.error('Failed to save session interaction:', error);
+    handleApiError(error);
+  }
+};
+
+// AI Responses
+export const saveAIResponse = async (sessionId, responseData) => {
+  try {
+    const res = await api.post(`/api/sessions/${sessionId}/ai-responses`, responseData);
+    console.log('Save AI response response:', JSON.stringify(res.data, null, 2));
+    return handleApiResponse(res);
+  } catch (error) {
+    console.error('Failed to save AI response:', error);
+    handleApiError(error);
+  }
+};
+
+export const getSessionAIResponses = async (sessionId) => {
+  try {
+    const res = await api.get(`/api/sessions/${sessionId}/ai-responses`);
+    console.log('Get session AI responses response:', JSON.stringify(res.data, null, 2));
+    return handleApiResponse(res);
+  } catch (error) {
+    console.error('Failed to get session AI responses:', error);
+    handleApiError(error);
+  }
+};
+
+// Conversation Sessions
+export const getConversationSessions = async (sessionId) => {
+  try {
+    const res = await api.get(`/api/sessions/${sessionId}/conversations`);
+    console.log('Get conversation sessions response:', JSON.stringify(res.data, null, 2));
+    return handleApiResponse(res);
+  } catch (error) {
+    console.error('Failed to get conversation sessions:', error);
+    handleApiError(error);
+  }
 };
 
 export default api; 

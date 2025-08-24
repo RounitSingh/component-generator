@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import Chatbot from './pages/Chatbot';
+import ChatbotAIEditor from './pages/ChatbotAIEditor';
 import Navbar from './components/Navbar';
 import TailwindTest from './components/TailwindTest';
 import AIEditor from './pages/AIEditor';
@@ -40,13 +40,13 @@ const App = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <main className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 ">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route element={<ProtectedRoute />}>
-            <Route path="/chatbot" element={<AIEditor />} />
+            <Route path="/chatbot" element={<ChatbotAIEditor />} />
             <Route path="/tailwind-test" element={<TailwindTest />} />
             <Route path="/react-live-check" element={<ReactLiveCheck />} />
             <Route path="/sessions" element={<SessionList />} />
@@ -54,7 +54,7 @@ const App = () => {
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </main>
+      </div>
     </div>
   );
 };
