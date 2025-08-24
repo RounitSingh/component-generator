@@ -49,9 +49,9 @@ const Navbar = () => {
                 <Link to="/chatbot" className="text-blue-600 hover:text-blue-800 transition-colors">
                   AI Chatbot
                 </Link>
-                <Link to="/sessions" className="text-blue-600 hover:text-blue-800 transition-colors">
+                {/* <Link to="/sessions" className="text-blue-600 hover:text-blue-800 transition-colors">
                   Sessions
-                </Link>
+                </Link> */}
                 <div className="flex items-center space-x-2">
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-lg"
