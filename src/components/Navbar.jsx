@@ -46,6 +46,12 @@ const Navbar = () => {
           <div className="hidden md:flex">
             {user ? (
               <div className="flex items-center space-x-4">
+                <Link to="/chatbot" className="text-blue-600 hover:text-blue-800 transition-colors">
+                  AI Chatbot
+                </Link>
+                <Link to="/sessions" className="text-blue-600 hover:text-blue-800 transition-colors">
+                  Sessions
+                </Link>
                 <div className="flex items-center space-x-2">
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-lg"
@@ -113,6 +119,20 @@ const Navbar = () => {
           <div className="md:hidden mt-4 pb-4 border-t border-gray-200">
             {user ? (
               <div className="flex flex-col space-y-4 pt-4">
+                <Link 
+                  to="/chatbot" 
+                  className="text-blue-600 hover:text-blue-800 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  AI Chatbot
+                </Link>
+                <Link 
+                  to="/sessions" 
+                  className="text-blue-600 hover:text-blue-800 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Sessions
+                </Link>
                 <div className="flex items-center space-x-2">
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-lg"

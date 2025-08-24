@@ -2,11 +2,12 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { duotoneSpace } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Download, Copy, Send, Image as ImageIcon, Save, Loader2, AlertCircle, StarsIcon } from 'lucide-react';
-import useChatStore from '../store/chatStore';
-import useComponentStore from '../store/componentStore';
+import useSessionChatStore from '../store/sessionChatStore';
+import useSessionComponentStore from '../store/sessionComponentStore';
 import { generateComponentWithGemini } from '../utils/geminiApi';
 import DynamicPreview from '../components/DynamicPreview';
 import PersistenceStatus from '../components/PersistenceStatus';
+import ComponentHistory from '../components/ComponentHistory';
 import {
   getSessionMessages,
   addSessionMessage,
@@ -78,13 +79,13 @@ const AIEditor = ({ sessionId, createNewSession = false }) => {
     setMessages,
     addMessage,
     setInteractions,
-  } = useChatStore();
+  } = useSessionChatStore();
   
   const {
     setComponents,
     addComponent,
     clearError: clearComponentError,
-  } = useComponentStore();
+  } = useSessionComponentStore();
   
   const [code, setCode] = useState({ jsx: '', css: '' });
   const [loading, setLoading] = useState(false);
@@ -296,9 +297,30 @@ const AIEditor = ({ sessionId, createNewSession = false }) => {
         console.log('User message saved:', savedUserMessage);
       }
 
-      // Prepare AI request
+      // Check if this is a follow-up prompt (modifying existing component)
+      const hasExistingComponent = code.jsx && code.css;
+      const isFollowUpPrompt = hasExistingComponent && messages.length > 0;
+      
+      // Prepare AI request with context
       let promptText = userPrompt;
       let imagePart = [];
+      
+      if (isFollowUpPrompt) {
+        // For follow-up prompts, include the current component code
+        promptText = `I have an existing React component. Please modify it according to this request: "${userPrompt}"
+
+Current JSX code:
+\`\`\`jsx
+${code.jsx}
+\`\`\`
+
+Current CSS code:
+\`\`\`css
+${code.css}
+\`\`\`
+
+Please provide the complete updated component with the requested changes.`;
+      }
       
       if (image) {
         promptText += '\n[Image attached]';
@@ -313,7 +335,7 @@ const AIEditor = ({ sessionId, createNewSession = false }) => {
       }
 
       // Generate AI response
-      const output = await generateComponentWithGemini(promptText, imagePart);
+      const output = await generateComponentWithGemini(promptText, imagePart, isFollowUpPrompt);
       const responseTime = Date.now() - startTime;
 
       // Add AI response to local state
@@ -337,6 +359,8 @@ const AIEditor = ({ sessionId, createNewSession = false }) => {
           metadata: {
             hasImage: !!image,
             imageType: image?.type || null,
+            isFollowUpPrompt,
+            previousComponentExists: hasExistingComponent,
           },
         };
 
@@ -350,11 +374,14 @@ const AIEditor = ({ sessionId, createNewSession = false }) => {
       const interactionData = {
         prompt: userPrompt,
         response: output,
-        interactionType: 'component_generation',
+        interactionType: isFollowUpPrompt ? 'component_modification' : 'component_generation',
         targetElement: null,
         conversationId,
         relatedMessageId: savedUserMessage?.id || null,
-        metadata: {},
+        metadata: {
+          isFollowUpPrompt,
+          previousComponentExists: hasExistingComponent,
+        },
       };
       
       if (sessionId) {
@@ -373,13 +400,16 @@ const AIEditor = ({ sessionId, createNewSession = false }) => {
         setIsSaving(true);
         try {
           const componentData = {
-            name: 'AIComponent',
+            name: isFollowUpPrompt ? 'ModifiedAIComponent' : 'AIComponent',
             jsxCode: parsed.jsx,
             cssCode: parsed.css,
-            componentType: 'generated',
+            componentType: isFollowUpPrompt ? 'modified' : 'generated',
             metadata: {
               conversationId,
               generatedFrom: savedUserMessage?.id || null,
+              isFollowUpPrompt,
+              previousComponentExists: hasExistingComponent,
+              modificationPrompt: isFollowUpPrompt ? userPrompt : null,
             },
           };
 
@@ -395,8 +425,8 @@ const AIEditor = ({ sessionId, createNewSession = false }) => {
           // Update local storage backup
           saveSessionDataLocally(sessionId, {
             messages: [...messages, promptMsg, responseMsg],
-            components: [...(useComponentStore.getState().components || []), { ...componentData, isCurrent: true }],
-            interactions: [...(useChatStore.getState().interactions || []), interactionData],
+            components: [...(useSessionComponentStore.getState().components || []), { ...componentData, isCurrent: true }],
+            interactions: [...(useSessionChatStore.getState().interactions || []), interactionData],
           });
 
         } catch {
@@ -441,11 +471,11 @@ const AIEditor = ({ sessionId, createNewSession = false }) => {
       });
 
       // Update local storage backup
-      const currentState = useComponentStore.getState();
+      const currentState = useSessionComponentStore.getState();
       saveSessionDataLocally(sessionId, {
-        messages: useChatStore.getState().messages,
+        messages: useSessionChatStore.getState().messages,
         components: [...currentState.components, { ...componentData, isCurrent: true }],
-        interactions: useChatStore.getState().interactions,
+        interactions: useSessionChatStore.getState().interactions,
       });
 
     } catch {
@@ -459,6 +489,25 @@ const AIEditor = ({ sessionId, createNewSession = false }) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  const handleSelectVersion = (component) => {
+    setCode({
+      jsx: component.jsxCode,
+      css: component.cssCode
+    });
+  };
+
+  const handleRestoreFromMessage = (messageId) => {
+    const { restoreComponentFromMessage } = useSessionComponentStore.getState();
+    const restoredComponent = restoreComponentFromMessage(messageId);
+    
+    if (restoredComponent) {
+      setCode({
+        jsx: restoredComponent.jsxCode,
+        css: restoredComponent.cssCode
+      });
     }
   };
 
@@ -478,37 +527,69 @@ const AIEditor = ({ sessionId, createNewSession = false }) => {
       {/* Chat Panel */}
       <div className="md:col-span-1 w-full  p-6  flex flex-col  rounded-2xl border-gray-200  drop-shadow-lg max-h-screen overflow-y-auto bg-white">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl flex flex-row gap-2 font-bold text-blue-700"><span className="rounded-lg bg-blue-500 p-2"><StarsIcon className='h-5 w-5 text-blue-50'/ ></span> AI Assistant</h2>
-          {sessionId && (
-            <PersistenceStatus
-              isSaving={isSaving}
-              lastSaved={lastSaved}
-              error={persistenceError}
-              isOnline={isOnline}
-              className="text-xs"
-            />
-          )}
+          <h2 className="text-2xl flex flex-row gap-2 font-bold text-blue-700"><span className="rounded-lg bg-blue-500 p-2"><StarsIcon className='h-5 w-5 text-blue-50'/ ></span> AI Session Editor</h2>
+          <div className="flex items-center gap-4">
+            {code.jsx && code.css && (
+              <div className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                Component v{useSessionComponentStore.getState().components?.filter(c => c.isCurrent).length || 1}
+              </div>
+            )}
+            {sessionId && (
+              <PersistenceStatus
+                isSaving={isSaving}
+                lastSaved={lastSaved}
+                error={persistenceError}
+                isOnline={isOnline}
+                className="text-xs"
+              />
+            )}
+          </div>
         </div>
 
         {/* Messages */}
         <div className="flex-1 h-[400px] overflow-y-auto mb-4 space-y-3 pr-2">
           {messages.map((msg, idx) => (
             <div key={msg.id || idx} className={`flex ${msg.type === 'prompt' ? 'justify-start' : 'justify-end'}`}>
-              <div
-                className={`rounded-xl px-4 py-3 max-w-[80%] shadow text-sm whitespace-pre-line animate-in ${
-                  msg.type === 'prompt'
-                    ? 'bg-blue-100 text-gray-800'
-                    : 'bg-green-100 text-gray-900'
-                }`}
-              >
-                {msg.text}
-                {msg.image && (
-                  <img
-                    src={URL.createObjectURL(msg.image)}
-                    alt="User upload"
-                    className="mt-2 max-h-32 rounded border"
-                  />
-                )}
+              <div className="flex flex-col">
+                <div
+                  className={`rounded-xl px-4 py-3 max-w-[80%] shadow text-sm whitespace-pre-line animate-in ${
+                    msg.type === 'prompt'
+                      ? 'bg-blue-100 text-gray-800'
+                      : 'bg-green-100 text-gray-900'
+                  }`}
+                >
+                  {msg.text}
+                  {msg.image && (
+                    <img
+                      src={URL.createObjectURL(msg.image)}
+                      alt="User upload"
+                      className="mt-2 max-h-32 rounded border"
+                    />
+                  )}
+                </div>
+                {/* Restore button for user messages that have associated components */}
+                {msg.type === 'prompt' && (() => {
+                  const { components } = useSessionComponentStore.getState();
+                  const hasAssociatedComponent = components.some(comp => 
+                    comp.metadata?.generatedFrom === (msg.id || msg.conversationId) ||
+                    comp.metadata?.conversationId === (msg.id || msg.conversationId)
+                  );
+                  
+                  return hasAssociatedComponent ? (
+                    <div className="mt-1 ml-2">
+                      <button
+                        onClick={() => handleRestoreFromMessage(msg.id || msg.conversationId)}
+                        className="text-xs bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded transition-colors flex items-center gap-1"
+                        title="Restore component from this message"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Restore
+                      </button>
+                    </div>
+                  ) : null;
+                })()}
               </div>
             </div>
           ))}
@@ -517,7 +598,7 @@ const AIEditor = ({ sessionId, createNewSession = false }) => {
             <div className="flex justify-end">
               <div className="rounded-xl px-4 py-3 bg-green-100 text-gray-900 shadow text-sm animate-in flex items-center gap-2">
                 <Loader2 className="animate-spin h-4 w-4" />
-                Generating...
+                {code.jsx && code.css ? 'Modifying component...' : 'Generating component...'}
               </div>
             </div>
           )}
@@ -531,6 +612,12 @@ const AIEditor = ({ sessionId, createNewSession = false }) => {
             </div>
           )}
         </div>
+
+        {/* Component History */}
+        <ComponentHistory 
+          components={useSessionComponentStore.getState().components}
+          onSelectVersion={handleSelectVersion}
+        />
 
         {/* Input Area */}
         <div className="flex gap-2 items-center mt-2">
@@ -589,6 +676,11 @@ const AIEditor = ({ sessionId, createNewSession = false }) => {
             onClick={() => setActiveTab('preview')}
           >
             Preview
+            {code.jsx && code.css && useSessionComponentStore.getState().components?.filter(c => c.isCurrent).length > 1 && (
+              <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                Modified
+              </span>
+            )}
           </button>
           <button
             className={`px-4 py-2 font-semibold border-b-2 transition-colors ${

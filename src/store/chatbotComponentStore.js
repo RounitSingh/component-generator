@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 
-const useComponentStore = create((set) => ({
+const useChatbotComponentStore = create((set) => ({
   components: [],
- currentComponent: null,
+  currentComponent: null,
   isLoading: false,
   error: null,
   
@@ -37,6 +37,29 @@ const useComponentStore = create((set) => ({
     isLoading: false, 
     error: null 
   }),
+  
+  // Restore component from message
+  restoreComponentFromMessage: (messageId) => {
+    const state = useChatbotComponentStore.getState();
+    // Find the component that was generated from this message
+    const componentToRestore = state.components.find(comp => 
+      comp.metadata?.generatedFrom === messageId || 
+      comp.metadata?.conversationId === messageId
+    );
+    
+    if (componentToRestore) {
+      useChatbotComponentStore.setState({
+        currentComponent: componentToRestore,
+        components: state.components.map(comp => ({
+          ...comp,
+          isCurrent: comp.id === componentToRestore.id
+        }))
+      });
+      return componentToRestore;
+    }
+    
+    return null;
+  },
 }));
 
-export default useComponentStore; 
+export default useChatbotComponentStore;

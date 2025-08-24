@@ -7,8 +7,8 @@ const testPersistence = async () => {
   // Test 1: Check if stores are properly initialized
   console.log('\n📋 Test 1: Store Initialization');
   try {
-    const chatStore = window.useChatStore?.getState();
-    const componentStore = window.useComponentStore?.getState();
+    const chatStore = window.useChatStoreTesting?.getState();
+    const componentStore = window.useComponentStoreTesting?.getState();
     
     if (chatStore && componentStore) {
       console.log('✅ Stores are properly initialized');
@@ -211,5 +211,8 @@ window.testPersistenceUtilities = testPersistenceUtilities;
 console.log('🧪 Persistence test functions loaded!');
 console.log('Run testPersistence() to start testing');
 console.log('Run testPersistenceUtilities() to test utilities');
+
+
+
 
 
