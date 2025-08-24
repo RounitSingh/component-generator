@@ -221,7 +221,7 @@
                     <span className="rounded-lg bg-blue-500 p-2">
                     <StarsIcon className='h-5 w-5 text-blue-50'/>
                     </span> 
-                    AI Chatbot
+                    GenUi
                 </h2>
                 <div className="flex items-center gap-4">
                     {code.jsx && code.css && (
