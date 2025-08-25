@@ -296,6 +296,8 @@ const ChatbotAIEditor = () => {
 
     const handleClearChat = () => {
         setShowScrollButton(false);
+        setEditMode(false);
+        clearSelectedElement();
         clearMessages();
         clearComponents();
         setCode({ jsx: '', css: '' });
