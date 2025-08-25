@@ -52,4 +52,37 @@
       transform: translateY(0);
     }
   }
+  
+  /* Edit mode styles */
+  .edit-mode-active {
+    cursor: crosshair;
+  }
+  
+  .edit-mode-active * {
+    cursor: crosshair;
+  }
+  
+  .edit-mode-active *:hover {
+    outline: 1px dashed #3b82f6;
+    outline-offset: 1px;
+  }
+  
+  .element-selected {
+    outline: 2px solid #3b82f6 !important;
+    outline-offset: 2px !important;
+    position: relative;
+  }
+  
+  .element-selected::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border: 1px solid #3b82f6;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 1000;
+  }
 }

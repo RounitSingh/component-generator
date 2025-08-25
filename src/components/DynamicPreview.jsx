@@ -6,6 +6,8 @@ import { format, parseISO, addDays, subDays, startOfWeek, endOfWeek } from 'date
 import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import { motion, AnimatePresence } from 'framer-motion';
+import useChatbotComponentStore from '../store/chatbotComponentStore';
+import elementSelectionService from '../utils/elementSelectionService';
 
 // Dynamic icon resolver function
 const getIcon = (iconName) => {
@@ -155,34 +157,122 @@ const injectCSS = (css) => {
 };
 
 const DynamicPreview = ({ jsx, css }) => {
+  const { 
+    editMode, 
+    selectedElement, 
+    setSelectedElement, 
+    isElementSelectionValid,
+    validateSelectedElement
+  } = useChatbotComponentStore();
+
   React.useEffect(() => {
     injectCSS(css);
   }, [css]);
 
   const { code: processedCode, error: preprocessError } = preprocessCode(jsx);
 
-  // Add a simple test to verify all libraries are available
+  // Tag nodes after render to stabilize recovery
   React.useEffect(() => {
-    if (window && window.testLibraries) {
-      console.log('✅ All libraries loaded successfully:', {
-        lucide: !!LucideIcons.Heart,
-        
-        lodash: !!debounce,
-        dateFns: !!format,
-        framerMotion: !!motion,
-        reactHookForm: !!useForm,
-        yup: !!yup
-      });
+    const previewContainer = document.querySelector('[data-live-preview]');
+    if (previewContainer) {
+      elementSelectionService.tagContainer(previewContainer);
     }
+  }, [processedCode]);
+
+  // Initialize element selection service
+  React.useEffect(() => {
+    elementSelectionService.initialize();
+    return () => { elementSelectionService.cleanup(); };
+  }, []);
+
+  // Handle element selection with robust service
+  React.useEffect(() => {
+    if (!editMode) {
+      elementSelectionService.removeAllHighlights();
+      elementSelectionService.stopObserving();
+      return;
+    }
+
+    const handleRightClick = (e) => {
+      e.preventDefault();
+      const target = e.target;
+      const previewContainer = target.closest('[data-live-preview]');
+      if (previewContainer) {
+        try {
+          const elementData = elementSelectionService.extractElementMetadata(target);
+          setSelectedElement(elementData);
+          elementSelectionService.highlightElement(target);
+        } catch { /* noop */ }
+      }
+    };
+
+    const previewContainer = document.querySelector('[data-live-preview]');
+    if (previewContainer) {
+      elementSelectionService.tagContainer(previewContainer);
+      previewContainer.classList.add('edit-mode-active');
+      elementSelectionService.addEventListener(previewContainer, 'contextmenu', handleRightClick);
+      elementSelectionService.observeContainer(previewContainer);
+      return () => {
+        previewContainer.classList.remove('edit-mode-active');
+        elementSelectionService.removeEventListener(previewContainer, 'contextmenu');
+        elementSelectionService.stopObserving();
+      };
+    }
+    return undefined;
+  }, [editMode, setSelectedElement]);
+
+  // Validate selected element periodically (recovery is silent)
+  React.useEffect(() => {
+    if (editMode && selectedElement) {
+      const intervalId = setInterval(() => { validateSelectedElement(); }, 3000);
+      return () => clearInterval(intervalId);
+    }
+  }, [editMode, selectedElement, validateSelectedElement]);
+
+  // Auto-recover selection if invalid after DOM updates
+  React.useEffect(() => {
+    if (!editMode || !selectedElement || isElementSelectionValid) {return};
+    const el = elementSelectionService.findElementByMetadata(selectedElement);
+    if (el) {
+      const meta = elementSelectionService.extractElementMetadata(el);
+      setSelectedElement(meta);
+      elementSelectionService.highlightElement(el);
+    }
+  }, [editMode, selectedElement, isElementSelectionValid, setSelectedElement]);
+
+  // Cleanup effect when component unmounts
+  React.useEffect(() => () => {
+    elementSelectionService.removeAllHighlights();
+    elementSelectionService.stopObserving();
   }, []);
 
   return (
     <LiveProvider code={processedCode} scope={scope} noInline>
       <div className="grid grid-cols-1 gap-4">
-        <div className="p-4 bg-gray-100 rounded-md border border-gray-300">
+        <div className="p-4 bg-gray-100 rounded-md border border-gray-300 relative" data-live-preview>
           <LivePreview className="mb-2" />
           <LiveError className="text-red-600" />
           {preprocessError && <div className="text-red-500">{preprocessError}</div>}
+          {editMode && (
+            <div className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-medium">
+              Edit Mode
+            </div>
+          )}
+          {/*{editMode && selectedElement && isElementSelectionValid && (
+            <div className="absolute bottom-2 left-2 bg-white border border-gray-300 rounded p-2 text-xs max-w-xs shadow-lg">
+              <div className="font-medium text-gray-700 mb-1">Selected Element:</div>
+              <div className="text-gray-600 font-mono">{selectedElement.tagName}</div>
+              {selectedElement.className && (
+                <div className="text-gray-500 text-xs">Class: {selectedElement.className}</div>
+              )}
+              {selectedElement.id && (
+                <div className="text-gray-500 text-xs">ID: {selectedElement.id}</div>
+              )}
+              {selectedElement.textContent && (
+                <div className="text-gray-500 text-xs truncate">Text: {selectedElement.textContent}</div>
+              )}
+            </div>
+          )} */}
         </div>
       </div>
     </LiveProvider>
