@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App.jsx';
 import SessionGuard from './components/SessionGuard';
+import { Analytics } from '@vercel/analytics/react';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -22,6 +23,7 @@ createRoot(document.getElementById('root')).render(
       <BrowserRouter>
         <SessionGuard>
           <App />
+           <Analytics />
         </SessionGuard>
       </BrowserRouter>
     </QueryClientProvider>
