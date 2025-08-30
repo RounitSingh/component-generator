@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams,useLocation  } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -17,11 +17,14 @@ import { useEffect } from 'react';
 
 const AIEditorWithSession = () => {
   const { sessionId } = useParams();
+  
+  
   return <AIEditor sessionId={sessionId} />;
 };
 
 const App = () => {
   const { setUser, logout } = useAuthStore();
+  const location = useLocation();
   useEffect(() => {
     const hydrateUser = async () => {
       if (localStorage.getItem('accessToken')) {
@@ -37,10 +40,13 @@ const App = () => {
     };
     hydrateUser();
   }, [setUser, logout]);
+
+  const hideNavbar = location.pathname === "/login" || location.pathname === "/signup";
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="container mx-auto px-4 ">
+      {!hideNavbar && <Navbar />}
+      <div className=" ">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />

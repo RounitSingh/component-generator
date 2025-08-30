@@ -989,8 +989,8 @@ const ChatbotAIEditor = () => {
     };
 
     return (
-        <div className="min-h-screen font-inter">
-            <div className="container mx-auto p-6 h-screen">
+        <div className="min-h-screen font-inter ">
+            <div className="container mx-auto py-6 px-8 h-screen">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-full">
                     {/* Chat Panel border-slate-200/60 */}
                     <div className="lg:col-span-4 bg-white rounded-3xl border border-slate-200/60 shadow-xl   flex flex-col item-center justify-between overflow-hidden">
@@ -1265,7 +1265,7 @@ const ChatbotAIEditor = () => {
                             {activeTab === 'preview' ? (
                                 <div className="h-full p-6">
                                     {code.jsx ? (
-                                        <div className="h-full bg-slate-50 rounded-2xl border border-slate-200 overflow-auto">
+                                        <div className="h-full  bg-slate-50 rounded-2xl border border-slate-200 overflow-auto">
                                             <DynamicPreview jsx={code.jsx} css={code.css} />
                                         </div>
                                     ) : (

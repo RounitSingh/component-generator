@@ -258,7 +258,17 @@ const DynamicPreview = ({ jsx, css }) => {
               Edit Mode
             </div>
           )}
-          {/*{editMode && selectedElement && isElementSelectionValid && (
+        
+        </div>
+      </div>
+    </LiveProvider>
+  );
+};
+
+export default DynamicPreview;
+
+
+  {/*{editMode && selectedElement && isElementSelectionValid && (
             <div className="absolute bottom-2 left-2 bg-white border border-gray-300 rounded p-2 text-xs max-w-xs shadow-lg">
               <div className="font-medium text-gray-700 mb-1">Selected Element:</div>
               <div className="text-gray-600 font-mono">{selectedElement.tagName}</div>
@@ -273,10 +283,3 @@ const DynamicPreview = ({ jsx, css }) => {
               )}
             </div>
           )} */}
-        </div>
-      </div>
-    </LiveProvider>
-  );
-};
-
-export default DynamicPreview;
