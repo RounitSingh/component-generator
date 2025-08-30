@@ -92,7 +92,8 @@ const handleApiError = (error) => {
 export const getProfile = async () => {
   try {
     const res = await api.get('/api/auth/profile');
-    console.log('Profile response:', JSON.stringify(res.data, null, 2));
+    // console.log('Profile response:', JSON.stringify(res.data, null, 2));
+    console.log("profile fetched successfully ")
     return handleApiResponse(res);
   } catch (error) {
     handleApiError(error);
