@@ -720,6 +720,8 @@ const parseGeminiResponse = (text) => {
     };
 };
 
+
+
 const downloadFile = (filename, content) => {
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -1031,10 +1033,12 @@ const ChatbotAIEditor = () => {
                                 <div key={msg.id || idx} className={`flex ${msg.type === 'prompt' ? 'justify-start' : 'justify-end'}`}>
                                     <div className={`flex flex-col max-w-[85%] ${msg.type === 'prompt' ? 'items-start' : 'items-end'}`}>
                                         <div className={`rounded-2xl px-4 py-3 shadow-sm ${msg.type === 'prompt'
-                                                ? 'bg-gradient-to-r from-indigo-50  to-blue-50 text-indigo-900  drop-shadow-sm'
-                                                : ' bg-cyan-50 drop-shadow-sm  '
-                                            }`}>
-                                            <p className="text-sm leading-relaxed whitespace-pre-line">{msg.text}</p>
+                                            ? 'bg-gradient-to-r from-indigo-50 to-blue-50 text-indigo-900 drop-shadow-sm'
+                                            : 'bg-cyan-50 drop-shadow-sm'
+                                            } w-full break-words overflow-hidden`}>
+                                            <div className="break-words overflow-wrap-break-word whitespace-pre-wrap text-sm leading-relaxed ">
+                                                {msg.text}
+                                            </div>
                                             {msg.image && (
                                                 <img
                                                     src={URL.createObjectURL(msg.image)}
@@ -1116,88 +1120,8 @@ const ChatbotAIEditor = () => {
                             )}
                         </div>
 
-                        {/* Input Area */}
-                        {/* <div className=" bg-gradient-to-r from-slate-50/80 to-blue-50/80 backdrop-blur-sm border-t border-white/30">
-                            {selectedElement && isElementSelectionValid ? (
-                                <div className="mb-4 p-2 bg-white/60 backdrop-blur-sm border border-indigo-200/60 rounded-2xl shadow-lg">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3 flex-wrap">
-                                            <div className="w-2 h-2 bg-indigo-500 rounded-full shadow-inner"></div>
-                                            <span className="text-sm font-semibold text-indigo-800">Target Element</span>
-                                            <span className="font-mono text-sm text-indigo-700 bg-indigo-100/80 backdrop-blur-sm px-2 py-1 rounded-lg shadow-sm">
-                                                {formatSelectedElementLabel(selectedElement)}
-                                            </span>
-                                            <span className="text-xs text-indigo-600 bg-indigo-100/80 backdrop-blur-sm px-2 py-1 rounded-full shadow-sm">
-                                                {editMode ? 'Edit Mode ON' : 'Persistent'}
-                                            </span>
-                                        </div>
-                                        <button
-                                            onClick={clearSelectedElement}
-                                            className="text-indigo-600 hover:text-red-600 hover:bg-red-50/80 p-2 rounded-lg transition-all duration-200 hover:shadow-md backdrop-blur-sm flex-shrink-0"
-                                            title="Clear selected element"
-                                        >
-                                            <X size={16} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ) : null}
-
-                            <div className={`flex gap-3 ${selectedElement && isElementSelectionValid ? 'items-end' : 'items-center justify-center'}`}>
-                                <div className="flex-1 relative">
-                                    <input
-                                        type="text"
-                                        className="w-full px-4 py-4 pr-12 bg-white/80 backdrop-blur-sm border border-slate-300/50 rounded-2xl text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 shadow-lg hover:shadow-xl focus:shadow-2xl"
-                                        placeholder={
-                                            editMode && selectedElement
-                                                ? `Modify the selected ${selectedElement.tagName} element...`
-                                                : editMode
-                                                    ? "Select an element in the preview to target..."
-                                                    : "Describe your component..."
-                                        }
-                                        value={userPrompt}
-                                        onChange={(e) => setUserPrompt(e.target.value)}
-                                        onKeyDown={handleKeyDown}
-                                        disabled={loading}
-                                    />
-
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        className="hidden"
-                                        ref={fileInputRef}
-                                        onChange={(e) => {
-                                            if (e.target.files && e.target.files[0]) {
-                                                setImage(e.target.files[0]);
-                                            }
-                                        }}
-                                        disabled={loading}
-                                    />
-
-                                    <button
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-blue-600 hover:bg-blue-50/80 p-2 rounded-xl transition-all duration-200 backdrop-blur-sm hover:shadow-md"
-                                        onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                                        disabled={loading}
-                                        title="Attach image"
-                                    >
-                                        <ImageIcon size={18} />
-                                    </button>
-                                </div>
-
-                                <button
-                                    className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 disabled:from-slate-400 disabled:to-slate-400 text-white p-4 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
-                                    onClick={handleSend}
-                                    disabled={
-                                        loading || (!userPrompt.trim() && !image) || (editMode && !selectedElement)
-                                    }
-                                    title={
-                                        editMode && !selectedElement ? "Select an element to target" : "Send"
-                                    }
-                                >
-                                    <Send size={18} />
-                                </button>
-                            </div>
-                        </div> */}
-                               <div className="px-6 pb-6 pt-4  backdrop-blur-sm border-t border-white/30">
+                           {/* Input Area */}
+                        <div className="px-6 pb-6 pt-4  backdrop-blur-sm border-t border-white/30">
                             {selectedElement && isElementSelectionValid ? (
                                 <div className="mb-2 px-4 py-1.5 bg-blue-50/50 backdrop-blur-sm border border-indigo-200/60 rounded-2xl shadow-lg">
                                     <div className="flex items-center justify-between">
@@ -1285,8 +1209,8 @@ const ChatbotAIEditor = () => {
                             <div className="flex bg-slate-100 rounded-2xl p-1">
                                 <button
                                     className={`px-6 py-3 font-semibold text-sm rounded-xl transition-all duration-200 ${activeTab === 'preview'
-                                            ? 'bg-white text-blue-700 shadow-sm'
-                                            : 'text-slate-600 hover:text-blue-600'
+                                        ? 'bg-white text-blue-700 shadow-sm'
+                                        : 'text-slate-600 hover:text-blue-600'
                                         }`}
                                     onClick={() => setActiveTab('preview')}
                                 >
@@ -1299,8 +1223,8 @@ const ChatbotAIEditor = () => {
                                 </button>
                                 <button
                                     className={`px-6 py-3 font-semibold text-sm rounded-xl transition-all duration-200 ${activeTab === 'code'
-                                            ? 'bg-white text-blue-700 shadow-sm'
-                                            : 'text-slate-600 hover:text-blue-600'
+                                        ? 'bg-white text-blue-700 shadow-sm'
+                                        : 'text-slate-600 hover:text-blue-600'
                                         }`}
                                     onClick={() => setActiveTab('code')}
                                 >
