@@ -64,7 +64,7 @@ const Signup = () => {
         email: formData.email,
         password: formData.password,
       });
-      console.log('Signup API response:', res.data.data);
+      console.log('Signup successful');
       const { accessToken, refreshToken } = res.data.data;
       setTokens(accessToken, refreshToken);
       localStorage.setItem('accessToken', accessToken);

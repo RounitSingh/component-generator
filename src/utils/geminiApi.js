@@ -195,7 +195,7 @@ export const generateComponentWithGemini = async (
   isModification = false
 ) => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  console.log("api-key ***", apiKey);
+ 
   if (!apiKey) {
     throw new Error('Gemini API key is not set in environment variables.');
   }

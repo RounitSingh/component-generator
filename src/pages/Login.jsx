@@ -31,7 +31,7 @@ const Login = () => {
     console.log('Submitting form with:', formData);
     try {
       const res = await api.post('/api/auth/login', formData);
-      console.log('API Response:', JSON.stringify(res.data.data, null, 2));
+      console.log('login successful ');
       const { accessToken, refreshToken } = res.data.data;
       setTokens(accessToken, refreshToken);
       localStorage.setItem('accessToken', accessToken);
