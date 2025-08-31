@@ -9,19 +9,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import useChatbotComponentStore from '../store/chatbotComponentStore';
 import elementSelectionService from '../utils/elementSelectionService';
 
-// Dynamic icon resolver function
+
 const getIcon = (iconName) => {
-  // Handle invalid input
   if (!iconName || typeof iconName !== 'string') {
     return LucideIcons.AlertCircle || (() => <span>⚠️</span>);
   }
   
-  // Try Lucide icons first (most common)
   if (LucideIcons[iconName]) {
     return LucideIcons[iconName];
   }
   
-  // Try with different naming conventions
   const variations = [
     iconName,
     iconName.charAt(0).toUpperCase() + iconName.slice(1),
@@ -37,13 +34,10 @@ const getIcon = (iconName) => {
     }
   }
   
-  // Return a fallback icon if not found
   return LucideIcons.AlertCircle || (() => <span>⚠️ {iconName}</span>);
 };
 
-// Create a comprehensive scope with all the libraries
 const scope = { 
-  // React core
   React, 
   useState: React.useState, 
   useEffect: React.useEffect,
@@ -53,14 +47,11 @@ const scope = {
   useContext: React.useContext,
   useReducer: React.useReducer,
   
-  // Icons - Lucide (all available)
   ...LucideIcons,
   
-  // Dynamic icon resolver
   Icon: getIcon,
   getIcon,
   
-  // Utility libraries
   debounce,
   throttle,
   cloneDeep,
@@ -73,16 +64,13 @@ const scope = {
   startOfWeek,
   endOfWeek,
   
-  // Form libraries
   useForm,
   Controller,
   yup,
   
-  // Animation libraries
   motion,
   AnimatePresence,
   
-  // Common utility functions
   console,
   alert,
   confirm,
@@ -92,14 +80,12 @@ const scope = {
   clearTimeout,
   clearInterval,
   
-  // Browser APIs
   localStorage,
   sessionStorage,
   navigator,
   window,
   document,
   
-  // Math utilities
   Math,
   Date,
   JSON,
@@ -109,7 +95,6 @@ const scope = {
   Number,
   Boolean,
   
-  // CSS utilities (for inline styles)
   style: (styles) => styles
 };
 
@@ -144,15 +129,85 @@ const preprocessCode = (code) => {
   }
 };
 
+const preprocessCSS = (css) => {
+  if (!css || typeof css !== 'string') {
+    return '';
+  }
+
+  let processedCSS = css;
+
+  const resetCSS = `
+    [data-live-preview] {
+      all: initial;
+      box-sizing: border-box;
+      font-family: inherit;
+      line-height: inherit;
+      color: inherit;
+      background: transparent;
+      margin: 0;
+      padding: 0;
+      border: none;
+      outline: none;
+      text-decoration: none;
+      list-style: none;
+      display: block;
+      position: relative;
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+    
+    [data-live-preview] * {
+      box-sizing: border-box;
+    }
+    
+    [data-live-preview] .preview-content-wrapper {
+      position: relative;
+      width: 100%;
+      height: auto;
+      min-height: 100px;
+      overflow: visible;
+    }
+  `;
+
+  processedCSS = `${resetCSS}\n${processedCSS}`;
+
+  return processedCSS;
+};
+
 const injectCSS = (css) => {
   const existing = document.getElementById('live-preview-style');
   if (existing) { 
     existing.remove();
   }
 
+  if (!css || typeof css !== 'string') {
+    return;
+  }
+
+  const preprocessedCSS = preprocessCSS(css);
+  
+  const scopedCss = preprocessedCSS.replace(/(^|\})\s*([^{]+)/g, (match, brace, selector) => {
+    const trimmedSelector = selector.trim();
+    
+    if (trimmedSelector.startsWith('@')) {
+      return match;
+    }
+    
+    if (trimmedSelector.includes('html') || trimmedSelector.includes('body')) {
+      return match;
+    }
+    
+    if (trimmedSelector.includes('*')) {
+      return `${brace} [data-live-preview] ${selector}`;
+    }
+    
+    return `${brace} [data-live-preview] ${selector}`;
+  });
+
   const style = document.createElement('style');
   style.id = 'live-preview-style';
-  style.textContent = css || '';
+  style.textContent = scopedCss;
   document.head.appendChild(style);
 };
 
@@ -171,7 +226,6 @@ const DynamicPreview = ({ jsx, css }) => {
 
   const { code: processedCode, error: preprocessError } = preprocessCode(jsx);
 
-  // Tag nodes after render to stabilize recovery
   React.useEffect(() => {
     const previewContainer = document.querySelector('[data-live-preview]');
     if (previewContainer) {
@@ -179,13 +233,11 @@ const DynamicPreview = ({ jsx, css }) => {
     }
   }, [processedCode]);
 
-  // Initialize element selection service
   React.useEffect(() => {
     elementSelectionService.initialize();
     return () => { elementSelectionService.cleanup(); };
   }, []);
 
-  // Handle element selection with robust service
   React.useEffect(() => {
     if (!editMode) {
       elementSelectionService.removeAllHighlights();
@@ -221,7 +273,6 @@ const DynamicPreview = ({ jsx, css }) => {
     return undefined;
   }, [editMode, setSelectedElement]);
 
-  // Validate selected element periodically (recovery is silent)
   React.useEffect(() => {
     if (editMode && selectedElement) {
       const intervalId = setInterval(() => { validateSelectedElement(); }, 3000);
@@ -229,7 +280,6 @@ const DynamicPreview = ({ jsx, css }) => {
     }
   }, [editMode, selectedElement, validateSelectedElement]);
 
-  // Auto-recover selection if invalid after DOM updates
   React.useEffect(() => {
     if (!editMode || !selectedElement || isElementSelectionValid) {return};
     const el = elementSelectionService.findElementByMetadata(selectedElement);
@@ -240,7 +290,6 @@ const DynamicPreview = ({ jsx, css }) => {
     }
   }, [editMode, selectedElement, isElementSelectionValid, setSelectedElement]);
 
-  // Cleanup effect when component unmounts
   React.useEffect(() => () => {
     elementSelectionService.removeAllHighlights();
     elementSelectionService.stopObserving();
@@ -249,15 +298,33 @@ const DynamicPreview = ({ jsx, css }) => {
   return (
     <LiveProvider code={processedCode} scope={scope} noInline>
       <div className="grid grid-cols-1 gap-4">
-        <div className="p-4 bg-gray-100 rounded-md border border-gray-300 relative" data-live-preview>
-          <LivePreview className="mb-2" />
+        <div 
+          className="p-4 bg-gray-100 rounded-md border border-gray-300 relative overflow-hidden" 
+          data-live-preview
+          style={{
+            isolation: 'isolate',
+            contain: 'layout style paint',
+            position: 'relative'
+          }}
+        >
+          <div 
+            className="preview-content-wrapper"
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              overflow: 'auto'
+            }}
+          >
+            <LivePreview className="mb-2" />
+          </div>
           <LiveError className="text-red-600" />
           {preprocessError && <div className="text-red-500">{preprocessError}</div>}
-          {editMode && (
-            <div className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-medium">
-              Edit Mode
-            </div>
-          )}
+                      {editMode && (
+              <div className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-medium z-10">
+                Edit Mode
+              </div>
+            )}
         
         </div>
       </div>
@@ -266,20 +333,3 @@ const DynamicPreview = ({ jsx, css }) => {
 };
 
 export default DynamicPreview;
-
-
-  {/*{editMode && selectedElement && isElementSelectionValid && (
-            <div className="absolute bottom-2 left-2 bg-white border border-gray-300 rounded p-2 text-xs max-w-xs shadow-lg">
-              <div className="font-medium text-gray-700 mb-1">Selected Element:</div>
-              <div className="text-gray-600 font-mono">{selectedElement.tagName}</div>
-              {selectedElement.className && (
-                <div className="text-gray-500 text-xs">Class: {selectedElement.className}</div>
-              )}
-              {selectedElement.id && (
-                <div className="text-gray-500 text-xs">ID: {selectedElement.id}</div>
-              )}
-              {selectedElement.textContent && (
-                <div className="text-gray-500 text-xs truncate">Text: {selectedElement.textContent}</div>
-              )}
-            </div>
-          )} */}
