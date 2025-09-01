@@ -179,7 +179,7 @@ const Home = () => {
           </div>
 
           <div className="hero-buttons flex flex-col sm:flex-row gap-6 justify-center mb-20">
-            <Link to="/chatbot" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group relative overflow-hidden">
+            <Link to="/signup" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group relative overflow-hidden">
               <div className="relative z-10 flex items-center">
                 Start Creating
                 <Rocket className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
@@ -304,7 +304,7 @@ const Home = () => {
                 Join thousands of developers who are building faster with AI-generated components.
               </p>
               <div className="flex flex-col sm:flex-row gap-6 justify-center">
-                <Link to="/chatbot" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-10 py-5 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 inline-flex items-center">
+                <Link to="/signup" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-10 py-5 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 inline-flex items-center">
                   Start Building Now
                   <Rocket className="w-5 h-5 ml-2" />
                 </Link>
