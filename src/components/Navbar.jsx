@@ -35,61 +35,65 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-transparent shadow-md ">
+    <nav className="bg-transparent shadow-md">
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <Link to="/" className=" flex flex-row gap-2 ">
+          <Link to="/" className="flex flex-row gap-2">
             <span className="rounded-xl bg-blue-500 p-2">
-                    <StarsIcon className='h-5 w-5 text-blue-50'/>
-                    </span><span className="text-3xl font-bold text-blue-600">GenUI</span> 
+              <StarsIcon className="h-5 w-5 text-blue-50" />
+            </span>
+            <span className="text-3xl font-bold text-blue-600">GenUI</span>
           </Link>
 
-        
+          {/* Desktop Navigation */}
           <div className="hidden md:flex">
             {user ? (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center gap-6">
                 <Link to="/chatbot" className="text-blue-600 hover:text-blue-800 transition-colors">
-                  AI Chatbot
+                  AI Component Generator
                 </Link>
-                {/* <Link to="/sessions" className="text-blue-600 hover:text-blue-800 transition-colors">
-                  Sessions
-                </Link> */}
-                <div className="flex items-center space-x-2">
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                    style={{ backgroundColor: stringToColor(user.name || 'U') }}
-                    title={user.name}
-                  >
-                    {user.name ? user.name[0].toUpperCase() : 'U'}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
+                      style={{ backgroundColor: stringToColor(user.name || user.email) }}
+                    >
+                      {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-gray-700 font-medium">{user.name || user.email}</span>
                   </div>
-                  <span className="font-medium">{user.name}</span>
+                  <button
+                    onClick={handleLogout}
+                    className="text-gray-600 hover:text-red-600 transition-colors px-3 py-1 rounded-md hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
                 </div>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors"
-                >
-                  Logout
-                </button>
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
-                <Link to="/login" className="text-blue-600 hover:underline transition-colors">
+              <div className="flex items-center gap-4">
+                <Link
+                  to="/login"
+                  className="text-blue-600 hover:text-blue-800 transition-colors"
+                >
                   Login
                 </Link>
-                <Link to="/signup" className="text-blue-600 hover:underline transition-colors">
+                <Link
+                  to="/signup"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                >
                   Signup
                 </Link>
               </div>
             )}
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile menu button */}
           <div className="md:hidden">
             <button
               onClick={toggleMobileMenu}
               className="text-gray-600 hover:text-gray-900 focus:outline-none focus:text-gray-900"
-              aria-label="Toggle mobile menu"
             >
               <svg
                 className="h-6 w-6"
@@ -117,60 +121,54 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t border-gray-200">
-            {user ? (
-              <div className="flex flex-col space-y-4 pt-4">
-                <Link 
-                  to="/chatbot" 
-                  className="text-blue-600 hover:text-blue-800 transition-colors py-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  AI Chatbot
-                </Link>
-                <Link 
-                  to="/sessions" 
-                  className="text-blue-600 hover:text-blue-800 transition-colors py-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Sessions
-                </Link>
-                <div className="flex items-center space-x-2">
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                    style={{ backgroundColor: stringToColor(user.name || 'U') }}
-                    title={user.name}
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
+              {user ? (
+                <div className="space-y-2">
+                  <Link
+                    to="/chatbot"
+                    className="text-blue-600 hover:text-blue-800 transition-colors py-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    {user.name ? user.name[0].toUpperCase() : 'U'}
+                    AI Component Generator
+                  </Link>
+                  <div className="flex items-center gap-2 py-2 border-t">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
+                      style={{ backgroundColor: stringToColor(user.name || user.email) }}
+                    >
+                      {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-gray-700 font-medium">{user.name || user.email}</span>
                   </div>
-                  <span className="font-medium">{user.name}</span>
+                  <button
+                    onClick={handleLogout}
+                    className="text-gray-600 hover:text-red-600 transition-colors py-2"
+                  >
+                    Logout
+                  </button>
                 </div>
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition-colors w-full text-left"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col space-y-3 pt-4">
-                <Link 
-                  to="/login" 
-                  className="text-blue-600 hover:underline transition-colors py-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Login
-                </Link>
-                <Link 
-                  to="/signup" 
-                  className="text-blue-600 hover:underline transition-colors py-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Signup
-                </Link>
-              </div>
-            )}
+              ) : (
+                <div className="space-y-2">
+                  <Link
+                    to="/login"
+                    className="text-blue-600 hover:text-blue-800 transition-colors py-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="text-blue-600 hover:text-blue-800 transition-colors py-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Signup
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -179,3 +177,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+ 
