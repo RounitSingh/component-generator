@@ -48,5 +48,3 @@ A modern React frontend for an AI‑assisted component editor. Chat with an AI t
 
 
 
-## Notes
-- This frontend expects the backend API for auth, conversations, messages, and quotas.
