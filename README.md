@@ -30,7 +30,21 @@ A modern React frontend for an AI‑assisted component editor. Chat with an AI t
 
 
 ## Images
-<img width="1920" height="920" alt="Screenshot 2025-08-30 215826" src="https://github.com/user-attachments/assets/48fa84aa-69a0-4b78-9e4a-9fe45d6681fe" />
+
+<img
+  width="1920"
+  height="919"
+  alt="Screenshot 2025-09-11 141229"
+  src="https://github.com/user-attachments/assets/1f4bc1e8-93f1-4d62-9d0a-aa440f866904"
+  style="margin-bottom: 30px;" 
+/>
+
+<img
+  width="1914"
+  height="905"
+  alt="image"
+  src="https://github.com/user-attachments/assets/fe8cb500-bacf-4b91-be46-df06c870b9c3"
+/>
 
 
 
