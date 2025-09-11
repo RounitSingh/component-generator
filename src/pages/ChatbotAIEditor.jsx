@@ -1,19 +1,22 @@
 
 
-import React, { useRef, useState, useEffect, useCallback, memo } from 'react';
+import React, { useRef, useState, useEffect, useCallback, memo, lazy, Suspense } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Send, Image as ImageIcon, Loader2, StarsIcon, X, Plus } from 'lucide-react';
 import useChatbotChatStore from '../store/chatbotChatStore';
 import useChatbotComponentStore from '../store/chatbotComponentStore';
 import { generateComponentWithGemini } from '../utils/geminiApi';
-import DynamicPreview from '../components/DynamicPreview';
-import MessageList from '../components/chatbot/MessageList';
-import CodePanel from '../components/chatbot/CodePanel';
+// Lazy-load heavy subcomponents to reduce initial render cost
+const DynamicPreview = lazy(() => import('../components/DynamicPreview'));
+const MessageList = lazy(() => import('../components/chatbot/MessageList'));
+const CodePanel = lazy(() => import('../components/chatbot/CodePanel'));
 import {
     listConversations,
     createConversation,
     listMessagesByConversation,
     createMessage,
 } from '../utils/api';
+import useAuthStore from '../store/authStore';
 import {
     parseGeminiResponse,
     toBase64,
@@ -26,6 +29,8 @@ import {
 
 
 const ChatbotAIEditor = memo(() => {
+    const navigate = useNavigate();
+    const { logout } = useAuthStore();
     const {
         messages,
         addMessage,
@@ -61,6 +66,7 @@ const ChatbotAIEditor = memo(() => {
     const [conversationId, setConversationId] = useState(null);
     const [initializing, setInitializing] = useState(false);
     const [showScrollButton, setShowScrollButton] = useState(false);
+    const [isDataReady, setIsDataReady] = useState(false);
     
     const fileInputRef = useRef(null);
 
@@ -145,6 +151,7 @@ const ChatbotAIEditor = memo(() => {
                 console.log('🎨 [Component Init] Component set from conversation');
                 
                 console.log('🎉 [Session Init] Initialization complete!');
+                setIsDataReady(true);
             } catch (e) {
                 if (e.name === 'AbortError') {
                     console.log('🚫 [Session Init] Initialization cancelled');
@@ -152,6 +159,18 @@ const ChatbotAIEditor = memo(() => {
                 }
                 // Non-fatal; allow local-only flow
                 console.error('❌ [Session Init] Initialization failed:', e);
+                // If unauthorized, clear auth and redirect
+                const status = e?.response?.status || e?.status;
+                if (status === 401 || status === 403) {
+                    logout();
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('refreshToken');
+                    localStorage.removeItem('sessionId');
+                    navigate('/login', { replace: true });
+                    return;
+                }
+                // For other errors, stop blocking UI to avoid infinite loader
+                setIsDataReady(true);
             } finally {
                 setInitializing(false);
             }
@@ -162,7 +181,7 @@ const ChatbotAIEditor = memo(() => {
         return () => {
             abortController.abort();
         };
-    }, [setMessages, createAbortController]);
+    }, [setMessages, createAbortController, navigate, logout]);
 
     const handleSend = useCallback(async () => {
         if (!userPrompt.trim() && !image) return;
@@ -334,7 +353,7 @@ const ChatbotAIEditor = memo(() => {
             setUserPrompt('');
             setImage(null);
         }
-    }, [userPrompt, image, editMode, selectedElement, validateSelectedElement, conversationId, addMessage, code, messages, isElementSelectionValid, addComponent, createAbortController, promptText]);
+    }, [userPrompt, image, editMode, selectedElement, validateSelectedElement, conversationId, addMessage, code, messages, isElementSelectionValid, addComponent, createAbortController, promptText, components, setCurrentComponent, updateComponent]);
 
     const handleKeyDown = useCallback((e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -365,7 +384,7 @@ const ChatbotAIEditor = memo(() => {
         setError('');
     }, [setEditMode, clearSelectedElement, clearMessages, clearComponents]);
 
-    if (initializing) {
+    if (initializing || !isDataReady) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center">
                 <div className="text-center">
@@ -411,17 +430,19 @@ const ChatbotAIEditor = memo(() => {
                         </div>
 
                         {/* Messages */}
-                        <MessageList
-                            messages={processedMessages}
-                            loading={loading}
-                            error={error}
-                            editModeError={editModeError}
-                            showScrollButton={showScrollButton}
-                            onRestoreFromMessage={handleRestoreFromMessage}
-                            code={code}
-                            editMode={editMode}
-                            selectedElement={selectedElement}
-                        />
+                        <Suspense fallback={<div className="p-6 text-slate-500">Loading messages...</div>}>
+                            <MessageList
+                                messages={processedMessages}
+                                loading={loading}
+                                error={error}
+                                editModeError={editModeError}
+                                showScrollButton={showScrollButton}
+                                onRestoreFromMessage={handleRestoreFromMessage}
+                                code={code}
+                                editMode={editMode}
+                                selectedElement={selectedElement}
+                            />
+                        </Suspense>
 
                            {/* Input Area */}
                         <div className="px-6 pb-6 pt-4  backdrop-blur-sm border-t border-white/30">
@@ -569,7 +590,9 @@ const ChatbotAIEditor = memo(() => {
                                 <div className="h-full p-6">
                                     {code.jsx ? (
                                         <div className="h-full bg-slate-50 rounded-2xl border border-slate-200 overflow-auto">
-                                            <DynamicPreview jsx={code.jsx} css={code.css} />
+                                            <Suspense fallback={<div className="p-6 text-slate-500">Loading preview...</div>}>
+                                                <DynamicPreview jsx={code.jsx} css={code.css} />
+                                            </Suspense>
                                         </div>
                                     ) : (
                                         <div className="h-full flex items-center justify-center text-slate-400">
@@ -584,7 +607,9 @@ const ChatbotAIEditor = memo(() => {
                                     )}
                                 </div>
                             ) : (
-                                <CodePanel code={code} />
+                                <Suspense fallback={<div className="p-6 text-slate-500">Loading code...</div>}>
+                                    <CodePanel code={code} />
+                                </Suspense>
                             )}
                         </div>
                     </div>

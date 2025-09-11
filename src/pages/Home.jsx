@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link } from 'react-router-dom';
@@ -21,7 +22,11 @@ const Home = () => {
   const heroRef = useRef(null);
   const cardsRef = useRef(null);
   const floatingElementsRef = useRef(null);
+  const navigate = useNavigate();
 
+  // Determine auth state from localStorage (kept simple and synchronous)
+  const isLoggedIn = useMemo(() => Boolean(localStorage.getItem('accessToken')), []);
+  
   useEffect(() => {
     const ctx = gsap.context(() => {
       // Fast, smooth hero animations
@@ -115,6 +120,7 @@ const Home = () => {
       ease: 'power2.out'
     });
   };
+ 
 
   return (
     <div ref={heroRef} className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/30 relative overflow-hidden">
@@ -179,19 +185,43 @@ const Home = () => {
           </div>
 
           <div className="hero-buttons flex flex-col sm:flex-row gap-6 justify-center mb-20">
-            <Link to="/signup" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group relative overflow-hidden">
-              <div className="relative z-10 flex items-center">
-                Start Creating
-                <Rocket className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </Link>
-            <Link to="/login" className="border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-600 hover:text-white transition-all duration-300 transform hover:-translate-y-1 group">
-              <span className="flex items-center">
-                Sign In
-                <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
-              </span>
-            </Link>
+            {isLoggedIn ? (
+              <button
+                type="button"
+                onClick={() => navigate('/chatbot')}
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group relative overflow-hidden"
+              >
+                <div className="relative z-10 flex items-center">
+                  Start Creating
+                  <Rocket className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => navigate('/signup')}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group relative overflow-hidden"
+                >
+                  <div className="relative z-10 flex items-center">
+                    Start Creating
+                    <Rocket className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/login')}
+                  className="border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-600 hover:text-white transition-all duration-300 transform hover:-translate-y-1 group"
+                >
+                  <span className="flex items-center">
+                    Sign In
+                    <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+                  </span>
+                </button>
+              </>
+            )}
           </div>
 
           {/* Enhanced Stats */}
@@ -304,14 +334,35 @@ const Home = () => {
                 Join thousands of developers who are building faster with AI-generated components.
               </p>
               <div className="flex flex-col sm:flex-row gap-6 justify-center">
-                <Link to="/signup" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-10 py-5 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 inline-flex items-center">
-                  Start Building Now
-                  <Rocket className="w-5 h-5 ml-2" />
-                </Link>
-                <Link to="/login" className="border-2 border-blue-600 text-blue-600 px-10 py-5 rounded-xl font-semibold text-lg hover:bg-blue-600 hover:text-white transition-all duration-300 transform hover:-translate-y-1 inline-flex items-center">
-                  View Examples
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Link>
+                {isLoggedIn ? (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/chatbot')}
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-10 py-5 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 inline-flex items-center"
+                  >
+                    Start Building Now
+                    <Rocket className="w-5 h-5 ml-2" />
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/signup')}
+                      className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-10 py-5 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 inline-flex items-center"
+                    >
+                      Start Building Now
+                      <Rocket className="w-5 h-5 ml-2" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/login')}
+                      className="border-2 border-blue-600 text-blue-600 px-10 py-5 rounded-xl font-semibold text-lg hover:bg-blue-600 hover:text-white transition-all duration-300 transform hover:-translate-y-1 inline-flex items-center"
+                    >
+                      Sign In
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>

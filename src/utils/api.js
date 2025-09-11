@@ -86,6 +86,11 @@ api.interceptors.response.use(
       // ignore logging errors
     }
     const originalRequest = error.config;
+    const requestUrl = originalRequest?.url || '';
+    // Do not trigger refresh/redirect logic for login endpoint; let caller show message
+    if (error.response && error.response.status === 401 && requestUrl.includes('/api/auth/login')) {
+      return Promise.reject(error);
+    }
     if (error.response && error.response.status === 401 && !originalRequest._retry) {
       const rt = getRefreshToken();
       if (rt) {

@@ -31,13 +31,12 @@ const Login = () => {
     setIsLoading(true);
     setError('');
     
-    console.log('🔐 [Login] Starting login process...');
+    // console.log('🔐 [Login] Starting login process...');
     try {
       const res = await api.post('/api/auth/login', formData);
-      console.log('✅ [Login] Login successful');
       const { accessToken, refreshToken, sessionId } = res.data.data;
       
-      // Store tokens and sessionId in state and localStorage
+      console.log("res fetched **", res.data.data);
       setTokens(accessToken, refreshToken, sessionId);
       localStorage.setItem('accessToken', accessToken);
       if (refreshToken) {
@@ -48,22 +47,18 @@ const Login = () => {
         console.log('✅ [Login] SessionId stored:', sessionId);
       }
       
-      // Get user profile and update state
-      console.log('👤 [Login] Getting user profile...');
-
+      
       const user = await getProfile();
       setUser(user);
-      console.log('✅ [Login] User profile loaded:', user.name);
-      
-      setIsLoading(false);
-      console.log('🎉 [Login] Redirecting to chatbot...');
-      navigate('/chatbot', { replace: true });
+       navigate('/chatbot', { replace: true });
     } catch (err) {
       console.error('❌ [Login] Login failed:', err.response?.data?.message || err.message);
-      setIsLoading(false);
+      
       setError(
         err.response?.data?.message || 'Login failed. Please try again.'
       );
+    } finally{
+      setIsLoading(false);
     }
   };
 
