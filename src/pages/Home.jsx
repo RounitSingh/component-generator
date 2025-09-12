@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect,  useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -23,10 +23,16 @@ const Home = () => {
   const cardsRef = useRef(null);
   const floatingElementsRef = useRef(null);
   const navigate = useNavigate();
+  const [isLoggedIn,setIsLoggedIn]=useState(false);
 
   // Determine auth state from localStorage (kept simple and synchronous)
-  const isLoggedIn = useMemo(() => Boolean(localStorage.getItem('accessToken')), []);
-  
+
+  useEffect(()=>{
+    const t =  Boolean(localStorage.getItem('accessToken'));
+    setIsLoggedIn(t);
+    console.log("isLoggedIn", t);
+    
+  })
   useEffect(() => {
     const ctx = gsap.context(() => {
       // Fast, smooth hero animations

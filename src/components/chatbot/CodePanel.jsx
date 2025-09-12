@@ -3,7 +3,7 @@ import { Download, Copy } from 'lucide-react';
 import { copyToClipboard, downloadFile } from '../../utils/chatbotUtils';
 
 // Lazy load syntax highlighter to reduce initial bundle size
-import { githubDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { oneDark  } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const SyntaxHighlighter = lazy(() => import('react-syntax-highlighter').then(module => ({
     default: module.Prism
@@ -58,7 +58,7 @@ const CodePanel = memo(({ code }) => {
                         <Suspense fallback={<div className="p-4 text-slate-500">Loading syntax highlighter...</div>}>
                             <SyntaxHighlighter
                                 language="jsx"
-                                style={githubDark}
+                                style={oneDark }
                                 customStyle={{
                                     margin: 0,
                                     borderRadius: 0,
@@ -82,7 +82,7 @@ const CodePanel = memo(({ code }) => {
                         <Suspense fallback={<div className="p-4 text-slate-500">Loading syntax highlighter...</div>}>
                             <SyntaxHighlighter
                                 language="css"
-                                style={githubDark}
+                                style={oneDark }
                                 customStyle={{
                                     margin: 0,
                                     borderRadius: 0,
