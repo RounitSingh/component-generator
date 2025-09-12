@@ -221,7 +221,6 @@ const validateSelectedElements = () => {
     const isValid = isElementValid(store.selectedElement.element);
     if (!isValid) {
       // Do not surface UI error; log for debugging and mark invalid for silent recovery
-      // eslint-disable-next-line no-console
       console.warn('Selected element was modified or removed');
       useChatbotComponentStore.setState({ isElementSelectionValid: false });
     }

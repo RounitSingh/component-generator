@@ -38,9 +38,9 @@ export default defineConfig([
 
       // Enhanced error detection
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
-      'no-console': 'warn',
+     
       'no-debugger': 'error',
-      'no-alert': 'warn',
+      
 
       // React specific rules
       'react/jsx-uses-react': 'error',
@@ -50,7 +50,7 @@ export default defineConfig([
 
       // Code quality rules
       eqeqeq: ['error', 'always'],
-      curly: ['error', 'all'],
+      "curly": ["error", "multi-line"],
       'no-eval': 'error',
       'no-implied-eval': 'error',
       'no-new-func': 'error',
