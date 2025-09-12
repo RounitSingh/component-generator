@@ -36,7 +36,7 @@ const Login = () => {
       const res = await api.post('/api/auth/login', formData);
       const { accessToken, refreshToken, sessionId } = res.data.data;
       
-      console.log("res fetched **", res.data.data);
+      // console.log("res fetched **", res.data);
       setTokens(accessToken, refreshToken, sessionId);
       localStorage.setItem('accessToken', accessToken);
       if (refreshToken) {
@@ -44,7 +44,7 @@ const Login = () => {
       }
       if (sessionId) {
         localStorage.setItem('sessionId', sessionId);
-        console.log('✅ [Login] SessionId stored:', sessionId);
+        // console.log('✅ [Login] SessionId stored:', sessionId);
       }
       
       

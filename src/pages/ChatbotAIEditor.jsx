@@ -65,7 +65,7 @@ const ChatbotAIEditor = memo(() => {
     const [image, setImage] = useState(null);
     const [conversationId, setConversationId] = useState(null);
     const [initializing, setInitializing] = useState(false);
-    const [showScrollButton, setShowScrollButton] = useState(false);
+    const [showScrollButton, setShowScrollButton] = useState(true);
     const [isDataReady, setIsDataReady] = useState(false);
     
     const fileInputRef = useRef(null);
@@ -89,39 +89,39 @@ const ChatbotAIEditor = memo(() => {
         const initSessionAndConversation = async () => {
             try {
                 setInitializing(true);
-                console.log('🚀 [Session Init] Starting initialization...');
+                // // console.log('🚀 [Session Init] Starting initialization...');
                 
                 // Load conversations and pick the latest active one or create new
-                console.log('💬 [Conversation Init] Loading conversations...');
+                // // console.log('💬 [Conversation Init] Loading conversations...');
                 const convs = await listConversations();
                 
                 if (abortController.signal.aborted) return;
                 
-                console.log('📊 [Conversation Init] Found conversations:', convs?.length || 0);
+                // // console.log('📊 [Conversation Init] Found conversations:', convs?.length || 0);
                 
                 let conv = Array.isArray(convs) ? [...convs].sort((a,b) => new Date(b.updatedAt||0) - new Date(a.updatedAt||0)).find(c => c.isActive) : null;
                 if (!conv) {
-                    console.log('🆕 [Conversation Init] No active conversation, creating new...');
+                    // // console.log('🆕 [Conversation Init] No active conversation, creating new...');
                     conv = await createConversation({ title: 'ChatbotAIEditor Conversation' });
                     
                     if (abortController.signal.aborted) return;
                     
-                    console.log('✅ [Conversation Init] New conversation created:', conv.id);
+                    // // console.log('✅ [Conversation Init] New conversation created:', conv.id);
                 } else {
-                    console.log('♻️ [Conversation Init] Using existing conversation:', conv.id);
+                    // // console.log('♻️ [Conversation Init] Using existing conversation:', conv.id);
                 }
                 
                 // Store conversation ID in state for persistence
                 setConversationId(conv.id);
                 
                 // Load messages for conversation
-                console.log('📨 [Messages Init] Loading messages for conversation:', conv.id);
+                // // console.log('📨 [Messages Init] Loading messages for conversation:', conv.id);
                 const res = await listMessagesByConversation(conv.id);
                 
                 if (abortController.signal.aborted) return;
                 
                 const items = res?.items || res || [];
-                console.log('📊 [Messages Init] Found messages:', items.length);
+                // // console.log('📊 [Messages Init] Found messages:', items.length);
                 
                 // Rebuild message list and current component from backend
                 const frontendMsgs = items
@@ -142,23 +142,23 @@ const ChatbotAIEditor = memo(() => {
                 if (abortController.signal.aborted) return;
                 
                 setMessages(frontendMsgs);
-                console.log('✅ [Messages Init] Messages loaded:', frontendMsgs.length);
+                // // console.log('✅ [Messages Init] Messages loaded:', frontendMsgs.length);
                 
                 // Restore latest JSX/CSS component if present, else clear
                 const latestAssistantWithComponent = items.find(m => m.role === 'ai' && (m.type === 'jsx' || m.data?.component?.jsx));
                 const latestComponent = latestAssistantWithComponent?.data?.component;
                 setCode({ jsx: latestComponent?.jsx || '', css: latestComponent?.css || '' });
-                console.log('🎨 [Component Init] Component set from conversation');
+                // // console.log('🎨 [Component Init] Component set from conversation');
                 
-                console.log('🎉 [Session Init] Initialization complete!');
+                // // console.log('🎉 [Session Init] Initialization complete!');
                 setIsDataReady(true);
             } catch (e) {
                 if (e.name === 'AbortError') {
-                    console.log('🚫 [Session Init] Initialization cancelled');
+                    // // console.log('🚫 [Session Init] Initialization cancelled');
                     return;
                 }
                 // Non-fatal; allow local-only flow
-                console.error('❌ [Session Init] Initialization failed:', e);
+                // // console.error('❌ [Session Init] Initialization failed:', e);
                 // If unauthorized, clear auth and redirect
                 const status = e?.response?.status || e?.status;
                 if (status === 401 || status === 403) {
@@ -213,15 +213,15 @@ const ChatbotAIEditor = memo(() => {
         };
 
         try {
-            console.log('💬 [Message Send] Starting message send process...');
+            // // console.log('💬 [Message Send] Starting message send process...');
             
             // Local add first for snappy UI
             addMessage(promptMsg);
-            console.log('⚡ [Message Send] Message added to local state');
+            // // console.log('⚡ [Message Send] Message added to local state');
 
             // Persist user message to backend if conversation exists
             if (conversationId) {
-                console.log('💾 [Message Send] Persisting user message to backend...');
+                // // console.log('💾 [Message Send] Persisting user message to backend...');
                 const userPayload = {
                     conversationId,
                     role: 'user',
@@ -236,7 +236,7 @@ const ChatbotAIEditor = memo(() => {
                 
                 if (abortController.signal.aborted) return;
                 
-                console.log('✅ [Message Send] User message persisted to backend');
+                // // console.log('✅ [Message Send] User message persisted to backend');
             }
 
             const hasExistingComponent = code.jsx && code.css;
@@ -253,13 +253,13 @@ const ChatbotAIEditor = memo(() => {
                 ];
             }
 
-            console.log('🤖 [AI Generation] Calling Gemini API...');
+            // // console.log('🤖 [AI Generation] Calling Gemini API...');
             
             const output = await generateComponentWithGemini(finalPromptText, imagePart, isFollowUpPrompt);
             
             if (abortController.signal.aborted) return;
             
-            console.log('✅ [AI Generation] Response received from Gemini');
+            // // console.log('✅ [AI Generation] Response received from Gemini');
 
             const responseMsg = {
                 id: Date.now(),
@@ -268,14 +268,14 @@ const ChatbotAIEditor = memo(() => {
                 conversationId: localConversationId,
             };
             addMessage(responseMsg);
-            console.log('⚡ [AI Response] Response added to local state');
+            // // console.log('⚡ [AI Response] Response added to local state');
 
             const parsed = parseGeminiResponse(output);
-            console.log('🔍 [Component Parse] Parsed JSX:', !!parsed.jsx, 'CSS:', !!parsed.css);
+            // // console.log('🔍 [Component Parse] Parsed JSX:', !!parsed.jsx, 'CSS:', !!parsed.css);
             setCode(parsed);
 
             if (parsed.jsx && parsed.css) {
-                console.log('🎨 [Component Save] Saving component to local store...');
+                // // console.log('🎨 [Component Save] Saving component to local store...');
                 const componentData = {
                     name: isFollowUpPrompt ? 'ModifiedAIComponent' : 'AIComponent',
                     jsxCode: parsed.jsx,
@@ -308,20 +308,20 @@ const ChatbotAIEditor = memo(() => {
                             isCurrent: true,
                         });
                         setCurrentComponent({ ...current, ...componentData, isCurrent: true });
-                        console.log('✅ [Component Update] Existing component updated');
+                        // // console.log('✅ [Component Update] Existing component updated');
                     } else {
                         addComponent({ ...componentData, isCurrent: true });
-                        console.log('✅ [Component Save] No current component; added new');
+                        // // console.log('✅ [Component Save] No current component; added new');
                     }
                 } else {
                     addComponent({ ...componentData, isCurrent: true });
-                    console.log('✅ [Component Save] Component saved to local store');
+                    // // console.log('✅ [Component Save] Component saved to local store');
                 }
             }
 
             // Persist AI message with JSX/CSS to backend
             if (conversationId) {
-                console.log('💾 [AI Persistence] Persisting AI response to backend...');
+                // // console.log('💾 [AI Persistence] Persisting AI response to backend...');
                 const aiPayload = {
                     conversationId,
                     role: 'ai',
@@ -336,14 +336,14 @@ const ChatbotAIEditor = memo(() => {
                 
                 if (abortController.signal.aborted) return;
                 
-                console.log('✅ [AI Persistence] AI response persisted to backend');
+                // // console.log('✅ [AI Persistence] AI response persisted to backend');
             }
             
-            console.log('🎉 [Message Send] Complete!');
+            // // console.log('🎉 [Message Send] Complete!');
 
         } catch (error) {
             if (error.name === 'AbortError') {
-                console.log('🚫 [Message Send] Request cancelled');
+                // // console.log('🚫 [Message Send] Request cancelled');
                 return;
             }
             setError('Error generating component. Please try again.');

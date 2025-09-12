@@ -13,11 +13,11 @@ function SessionGuard({ children }) {
       
       if (accessToken) {
         try {
-          console.log('🔍 [SessionGuard] Validating session...');
+          // console.log('🔍 [SessionGuard] Validating session...');
           await getProfile();
-          console.log('✅ [SessionGuard] Session is valid');
-        } catch (error) {
-          console.error('❌ [SessionGuard] Session validation failed:', error);
+          // console.log('✅ [SessionGuard] Session is valid');
+        } catch  {
+          // console.error('❌ [SessionGuard] Session validation failed:', error);
           // Clear all auth data
           logout();
           localStorage.removeItem('accessToken');

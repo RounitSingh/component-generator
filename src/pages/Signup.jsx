@@ -69,11 +69,11 @@ const Signup = () => {
         password: formData.password,
       });
       
-      console.log('✅ [Signup] Account created successfully');
+      // console.log('✅ [Signup] Account created successfully', res.data);
       setIsLoading(false);
       
       // Show success message and redirect to login
-      alert('Account created successfully! Please login to continue.');
+      // alert('Account created successfully! Please login to continue.');
       navigate('/login', { replace: true });
     } catch (err) {
       setIsLoading(false);

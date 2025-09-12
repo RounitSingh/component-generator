@@ -22,7 +22,7 @@ const App = () => {
       
       if (accessToken) {
         try {
-          console.log('🔄 [App] Hydrating user from stored session...');
+          // console.log('🔄 [App] Hydrating user from stored session...');
           const user = await getProfile();
           setUser(user);
           console.log('✅ [App] User hydrated successfully:', user.name);
