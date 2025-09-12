@@ -65,7 +65,7 @@ const ChatbotAIEditor = memo(() => {
     const [image, setImage] = useState(null);
     const [conversationId, setConversationId] = useState(null);
     const [initializing, setInitializing] = useState(false);
-    const [showScrollButton, setShowScrollButton] = useState(true);
+    const [showScrollButton, setShowScrollButton] = useState(false);
     const [isDataReady, setIsDataReady] = useState(false);
     
     const fileInputRef = useRef(null);
