@@ -1,5 +1,7 @@
 import React, { memo } from 'react';
+import { User, Bot, DownloadCloud } from 'lucide-react';
 import useChatbotComponentStore from '../../store/chatbotComponentStore';
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
 
 const MessageItem = memo(({ 
     message, 
@@ -11,47 +13,66 @@ const MessageItem = memo(({
         comp.metadata?.generatedFrom && message.id && comp.metadata.generatedFrom === message.id
     );
 
+    const isUser = message.type === 'prompt';
+
     return (
-        <div className={`flex ${message.type === 'prompt' ? 'justify-start' : 'justify-end'}`}>
-            <div className={`flex flex-col max-w-[85%] ${message.type === 'prompt' ? 'items-start' : 'items-end'}`}>
-                <div className={`rounded-2xl px-4 py-3 shadow-sm ${
-                    message.type === 'prompt'
-                        ? 'bg-gradient-to-r from-indigo-50 to-blue-50 text-indigo-900 drop-shadow-sm'
-                        : 'bg-cyan-50 drop-shadow-sm'
-                } w-full break-words overflow-hidden`}>
-                    <div className="break-words overflow-wrap-break-word whitespace-pre-wrap text-sm leading-relaxed">
-                        {message.text}
+        <div className={`flex ${isUser ? 'justify-start' : 'justify-end'} w-full`}>
+            {/* Row container with avatar and bubble */}
+            <div className={`flex items-start gap-3 max-w-[85%] ${isUser ? '' : 'flex-row-reverse'}`}>
+                {/* Avatar */}
+                <Avatar className="h-8 w-8 shadow-sm ring-1 ring-white/10">
+                    {isUser ? (
+                        <AvatarFallback className="bg-[#0b0b0b] text-slate-300">
+                            <User size={16} />
+                        </AvatarFallback>
+                    ) : (
+                        <AvatarFallback className="bg-[#2B2B2B] text-slate-300">
+                            <Bot size={16} />
+                        </AvatarFallback>
+                    )}
+                </Avatar>
+
+                {/* Message bubble + extras */}
+                <div className={`flex flex-col ${isUser ? 'items-start' : 'items-end'} w-full`}>
+                    <div className={`${
+                        isUser
+                            ? 'rounded-tr-2xl rounded-br-2xl rounded-bl-2xl rounded-tl-md'
+                            : 'rounded-tl-2xl rounded-bl-2xl rounded-br-2xl rounded-tr-md'
+                    } px-4 py-3 shadow-sm ${
+                        isUser
+                            ? 'bg-[#0b0b0b] text-slate-200 border border-white/5'
+                            : 'bg-[#212223] text-slate-100 border border-white/5'
+                    } w-full break-words overflow-hidden`}
+                    >
+                        <div className="break-words overflow-wrap-break-word whitespace-pre-wrap text-sm leading-relaxed">
+                            {message.text}
+                        </div>
+                        {message.image && (
+                            <img
+                                src={URL.createObjectURL(message.image)}
+                                alt="User upload"
+                                className="mt-3 max-h-40 rounded-xl border border-white/10"
+                            />
+                        )}
                     </div>
-                    {message.image && (
-                        <img
-                            src={URL.createObjectURL(message.image)}
-                            alt="User upload"
-                            className="mt-3 max-h-32 rounded-xl border border-slate-200"
-                        />
+
+                    {isUser && message.selectedTarget && (
+                        <div className="mt-2 flex items-center gap-2 bg-[#111827] text-slate-300 border border-white/10 rounded-full px-3 py-1.5 text-[11px] font-medium">
+                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                            <span className="font-mono">Target: <span className="font-mono">{message.selectedTarget}</span></span>
+                        </div>
+                    )}
+
+                    {(!isUser && (hasAssociatedComponent || message.component?.jsx)) && (
+                        <button
+                            onClick={() => onRestoreFromMessage(message)}
+                            className="mt-2 flex items-center gap-2 bg-[#222226] hover:bg-[#1e1f1f] text-slate-200 border border-white/10 px-3 py-1.5 rounded-xl text-[11px] font-medium transition-colors"
+                            title="Restore component from this message"
+                        >
+                            <DownloadCloud size={14} /> Restore 
+                        </button>
                     )}
                 </div>
-                
-                {message.type === 'prompt' && message.selectedTarget && (
-                    <div className="mt-2 flex items-center gap-2 bg-indigo-50 text-indigo-700 border border-indigo-100 drop-shadow-xs rounded-full px-3 py-1.5 text-xs font-medium">
-                        <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></div>
-                        <span className="text-xs font-mono">
-                            Target: <span className="font-mono text-xs">{message.selectedTarget}</span>
-                        </span>
-                    </div>
-                )}
-                
-                {(message.type === 'response' && (hasAssociatedComponent || message.component?.jsx)) && (
-                    <button
-                        onClick={() => onRestoreFromMessage(message)}
-                        className="mt-2 flex items-center gap-2 drop-shadow-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200"
-                        title="Restore component from this message"
-                    >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Restore
-                    </button>
-                )}
             </div>
         </div>
     );

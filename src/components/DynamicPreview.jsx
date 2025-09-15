@@ -154,6 +154,7 @@ const preprocessCSS = (css) => {
       position: relative;
       width: 100%;
       height: auto;
+      max-height: 100vh;
       overflow: visible;
     }
     
@@ -165,6 +166,7 @@ const preprocessCSS = (css) => {
       position: relative;
       width: 100%;
       height: auto;
+      max-height: 100vh;
       min-height: 100px;
       overflow: visible;
     }
@@ -299,7 +301,7 @@ const DynamicPreview = ({ jsx, css }) => {
     <LiveProvider code={processedCode} scope={scope} noInline>
       <div className="grid grid-cols-1 gap-4">
         <div 
-          className="p-4 bg-gray-100 rounded-md border border-gray-300 relative overflow-hidden" 
+          className="  relative overflow-hidden" 
           data-live-preview
           style={{
             isolation: 'isolate',
@@ -313,10 +315,12 @@ const DynamicPreview = ({ jsx, css }) => {
               position: 'relative',
               width: '100%',
               height: '100%',
+             
+             
               overflow: 'auto'
             }}
           >
-            <LivePreview className="mb-2" />
+            <LivePreview className="" />
           </div>
           <LiveError className="text-red-600" />
           {preprocessError && <div className="text-red-500">{preprocessError}</div>}

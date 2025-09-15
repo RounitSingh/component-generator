@@ -41,9 +41,10 @@ const App = () => {
   }, [setUser, logout]);
 
   const hideNavbar = location.pathname === "/login" || location.pathname === "/signup";
+    const isHomePage = location.pathname === "/";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={`min-h-screen ${isHomePage ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-black' : 'bg-slate-900'}`}>
       {!hideNavbar && <Navbar />}
       <div>
         <Routes>

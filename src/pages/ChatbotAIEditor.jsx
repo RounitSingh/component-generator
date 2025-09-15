@@ -2,7 +2,9 @@
 
 import React, { useRef, useState, useEffect, useCallback, memo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send, Image as ImageIcon, Loader2, StarsIcon, X, Plus } from 'lucide-react';
+import { Send, Image as ImageIcon, Loader2, StarsIcon, X, Plus, Menu, EllipsisVertical } from 'lucide-react';
+import DownloadButton from '../components/DownloadButton';
+import useDownloadStore from '../store/downloadStore';
 import useChatbotChatStore from '../store/chatbotChatStore';
 import useChatbotComponentStore from '../store/chatbotComponentStore';
 import { generateComponentWithGemini } from '../utils/geminiApi';
@@ -10,6 +12,7 @@ import { generateComponentWithGemini } from '../utils/geminiApi';
 const DynamicPreview = lazy(() => import('../components/DynamicPreview'));
 const MessageList = lazy(() => import('../components/chatbot/MessageList'));
 const CodePanel = lazy(() => import('../components/chatbot/CodePanel'));
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '../components/ui/resizable';
 import {
     listConversations,
     createConversation,
@@ -26,6 +29,7 @@ import {
     useComponentCount,
     useProcessedMessages
 } from '../utils/chatbotUtils';
+
 
 
 const ChatbotAIEditor = memo(() => {
@@ -58,6 +62,8 @@ const ChatbotAIEditor = memo(() => {
     const { createAbortController } = useAbortController();
 
     const [code, setCode] = useState({ jsx: '', css: '' });
+    const setDownloadCode = useDownloadStore((s) => s.setCode);
+    const clearCode = useDownloadStore((s) => s.clearCode);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('preview');
@@ -67,9 +73,9 @@ const ChatbotAIEditor = memo(() => {
     const [initializing, setInitializing] = useState(false);
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [isDataReady, setIsDataReady] = useState(false);
-    
-    const fileInputRef = useRef(null);
 
+    const fileInputRef = useRef(null);
+  
     // Memoized values
     const processedMessages = useProcessedMessages(messages);
     const componentCount = useComponentCount(components);
@@ -85,44 +91,44 @@ const ChatbotAIEditor = memo(() => {
     // Initialize: ensure session, pick/create conversation, load messages
     useEffect(() => {
         const abortController = createAbortController();
-        
+
         const initSessionAndConversation = async () => {
             try {
                 setInitializing(true);
                 // // console.log('🚀 [Session Init] Starting initialization...');
-                
+
                 // Load conversations and pick the latest active one or create new
                 // // console.log('💬 [Conversation Init] Loading conversations...');
                 const convs = await listConversations();
-                
+
                 if (abortController.signal.aborted) return;
-                
+
                 // // console.log('📊 [Conversation Init] Found conversations:', convs?.length || 0);
-                
-                let conv = Array.isArray(convs) ? [...convs].sort((a,b) => new Date(b.updatedAt||0) - new Date(a.updatedAt||0)).find(c => c.isActive) : null;
+
+                let conv = Array.isArray(convs) ? [...convs].sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0)).find(c => c.isActive) : null;
                 if (!conv) {
                     // // console.log('🆕 [Conversation Init] No active conversation, creating new...');
                     conv = await createConversation({ title: 'ChatbotAIEditor Conversation' });
-                    
+
                     if (abortController.signal.aborted) return;
-                    
+
                     // // console.log('✅ [Conversation Init] New conversation created:', conv.id);
                 } else {
                     // // console.log('♻️ [Conversation Init] Using existing conversation:', conv.id);
                 }
-                
+
                 // Store conversation ID in state for persistence
                 setConversationId(conv.id);
-                
+
                 // Load messages for conversation
                 // // console.log('📨 [Messages Init] Loading messages for conversation:', conv.id);
                 const res = await listMessagesByConversation(conv.id);
-                
+
                 if (abortController.signal.aborted) return;
-                
+
                 const items = res?.items || res || [];
                 // // console.log('📊 [Messages Init] Found messages:', items.length);
-                
+
                 // Rebuild message list and current component from backend
                 const frontendMsgs = items
                     .slice()
@@ -138,18 +144,20 @@ const ChatbotAIEditor = memo(() => {
                             component: m.data?.component || null,
                         };
                     });
-                
+
                 if (abortController.signal.aborted) return;
-                
+
                 setMessages(frontendMsgs);
                 // // console.log('✅ [Messages Init] Messages loaded:', frontendMsgs.length);
-                
+
                 // Restore latest JSX/CSS component if present, else clear
                 const latestAssistantWithComponent = items.find(m => m.role === 'ai' && (m.type === 'jsx' || m.data?.component?.jsx));
                 const latestComponent = latestAssistantWithComponent?.data?.component;
-                setCode({ jsx: latestComponent?.jsx || '', css: latestComponent?.css || '' });
+                const newCode = { jsx: latestComponent?.jsx || '', css: latestComponent?.css || '' };
+                setCode(newCode);
+                setDownloadCode(newCode);
                 // // console.log('🎨 [Component Init] Component set from conversation');
-                
+
                 // // console.log('🎉 [Session Init] Initialization complete!');
                 setIsDataReady(true);
             } catch (e) {
@@ -175,13 +183,13 @@ const ChatbotAIEditor = memo(() => {
                 setInitializing(false);
             }
         };
-        
+
         initSessionAndConversation();
-        
+
         return () => {
             abortController.abort();
         };
-    }, [setMessages, createAbortController, navigate, logout]);
+    }, [setMessages, createAbortController, navigate, logout, setDownloadCode]);
 
     const handleSend = useCallback(async () => {
         if (!userPrompt.trim() && !image) return;
@@ -214,7 +222,7 @@ const ChatbotAIEditor = memo(() => {
 
         try {
             // // console.log('💬 [Message Send] Starting message send process...');
-            
+
             // Local add first for snappy UI
             addMessage(promptMsg);
             // // console.log('⚡ [Message Send] Message added to local state');
@@ -233,9 +241,9 @@ const ChatbotAIEditor = memo(() => {
                     },
                 };
                 await createMessage(userPayload);
-                
+
                 if (abortController.signal.aborted) return;
-                
+
                 // // console.log('✅ [Message Send] User message persisted to backend');
             }
 
@@ -254,11 +262,11 @@ const ChatbotAIEditor = memo(() => {
             }
 
             // // console.log('🤖 [AI Generation] Calling Gemini API...');
-            
+
             const output = await generateComponentWithGemini(finalPromptText, imagePart, isFollowUpPrompt);
-            
+
             if (abortController.signal.aborted) return;
-            
+
             // // console.log('✅ [AI Generation] Response received from Gemini');
 
             const responseMsg = {
@@ -273,6 +281,7 @@ const ChatbotAIEditor = memo(() => {
             const parsed = parseGeminiResponse(output);
             // // console.log('🔍 [Component Parse] Parsed JSX:', !!parsed.jsx, 'CSS:', !!parsed.css);
             setCode(parsed);
+            setDownloadCode(parsed);
 
             if (parsed.jsx && parsed.css) {
                 // // console.log('🎨 [Component Save] Saving component to local store...');
@@ -300,7 +309,7 @@ const ChatbotAIEditor = memo(() => {
                 if (hasExistingComponent) {
                     const current = components.find(c => c.isCurrent) || components[components.length - 1];
                     if (current) {
-                        updateComponent(current.id, { 
+                        updateComponent(current.id, {
                             jsxCode: componentData.jsxCode,
                             cssCode: componentData.cssCode,
                             componentType: componentData.componentType,
@@ -333,12 +342,12 @@ const ChatbotAIEditor = memo(() => {
                     } : { text: output },
                 };
                 await createMessage(aiPayload);
-                
+
                 if (abortController.signal.aborted) return;
-                
+
                 // // console.log('✅ [AI Persistence] AI response persisted to backend');
             }
-            
+
             // // console.log('🎉 [Message Send] Complete!');
 
         } catch (error) {
@@ -353,7 +362,7 @@ const ChatbotAIEditor = memo(() => {
             setUserPrompt('');
             setImage(null);
         }
-    }, [userPrompt, image, editMode, selectedElement, validateSelectedElement, conversationId, addMessage, code, messages, isElementSelectionValid, addComponent, createAbortController, promptText, components, setCurrentComponent, updateComponent]);
+    }, [userPrompt, image, editMode, selectedElement, validateSelectedElement, conversationId, addMessage, code, messages, isElementSelectionValid, addComponent, createAbortController, promptText, components, setCurrentComponent, updateComponent, setDownloadCode]);
 
     const handleKeyDown = useCallback((e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -382,7 +391,10 @@ const ChatbotAIEditor = memo(() => {
         clearComponents();
         setCode({ jsx: '', css: '' });
         setError('');
-    }, [setEditMode, clearSelectedElement, clearMessages, clearComponents]);
+        clearCode();
+    }, [setEditMode, clearSelectedElement, clearMessages, clearComponents, clearCode]);
+
+    // Download handled by Zustand store
 
     if (initializing || !isDataReady) {
         return (
@@ -396,41 +408,38 @@ const ChatbotAIEditor = memo(() => {
     }
 
     return (
-        <div className="min-h-screen font-inter ">
-            <div className="container mx-auto py-6 px-8 h-screen">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-full">
-                    {/* Chat Panel border-slate-200/60 */}
-                    <div className="lg:col-span-4 bg-white rounded-3xl border border-slate-200/60 shadow-xl   flex flex-col item-center justify-between overflow-hidden">
+        <div className="min-h-screen  font-inter ">
+            <div className=" mx-auto  h-screen">
+                <ResizablePanelGroup direction="horizontal" className="h-full">
+                    <ResizablePanel defaultSize={35} minSize={24} className="bg-[#1B1B1B] rounded-l-sm shadow-xl flex flex-col item-center justify-between overflow-hidden">
                         {/* Header */}
-                        <div className="flex justify-between items-center p-6 bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-white/20 rounded-2xl backdrop-blur-md">
-                                    <StarsIcon className="h-7 w-7" />
-                                </div>
-                                <div>
-                                    <h1 className="text-xl font-bold">GenUI</h1>
-                                    <p className="text-blue-100 text-sm">AI Component Generator</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                {code.jsx && code.css && (
-                                    <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs font-medium">
-                                        v{componentCount}
-                                    </div>
-                                )}
-                                <button
+                       <div className="flex  justify-end items-center p-3 shadow-md ">
+                            <div className="flex  w-full items-center justify-between gap-2">
+                             <button
                                     onClick={handleClearChat}
-                                    className="flex items-center gap-2 text-blue-50 hover:text-white hover:drop-shadow-md hover:bg-white/20 cursor-pointer px-3 py-2 rounded-xl transition-all duration-200 text-sm font-medium"
+                                    className="flex text-semibold items-center gap-1 hover:bg-[#2d2d2e] cursor-pointer  text-gray-300 hover:text-gray-200  px-2 py-1.5 rounded-lg transition-colors text-sm"
                                     title="New Chat"
                                 >
-                                    <Plus className="w-5 h-5 rounded-full bg-white/30 text-blue-50 p-0.5 backdrop-blur-md" />
-                                    New Chat
+                                    <Plus className="w-4 h-4" />
+                                    New 
                                 </button>
+                                <div className="flex items-center gap-2">
+  {code.jsx && code.css && (
+    <div className="bg-[#2d2d2e] text-gray-300 rounded-md px-2 py-0.5 text-xs font-medium flex items-center">
+      v{componentCount}
+    </div>
+  )}
+  <EllipsisVertical className="h-5 w-5 text-gray-300 cursor-pointer " />
+</div>
+
+
+                               
+                               
                             </div>
                         </div>
 
                         {/* Messages */}
-                        <Suspense fallback={<div className="p-6 text-slate-500">Loading messages...</div>}>
+                        <Suspense fallback={<div className="p-6  text-slate-400">Loading messages...</div>}>
                             <MessageList
                                 messages={processedMessages}
                                 loading={loading}
@@ -444,27 +453,27 @@ const ChatbotAIEditor = memo(() => {
                             />
                         </Suspense>
 
-                           {/* Input Area */}
-                        <div className="px-6 pb-6 pt-4  backdrop-blur-sm border-t border-white/30">
+                        {/* Input Area */}
+                        <div className="px-6 pb-6 pt-4  backdrop-blur-sm ">
                             {selectedElement && isElementSelectionValid ? (
-                                <div className="mb-2 px-4 py-1.5 bg-blue-50/50 backdrop-blur-sm border border-indigo-200/60 rounded-2xl shadow-lg">
+                                <div className="mb-3 px-3 py-1.5 bg-[#334155] border border-[#475569] rounded-lg">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2 flex-wrap text-xs">
-                                            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full shadow-inner"></div>
-                                            <span className="font-mono  text-indigo-800">Target:</span>
-                                            <span className="font-mono  text-indigo-700 bg-indigo-100/80 backdrop-blur-sm px-2 py-1 rounded-lg shadow-sm">
+                                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                                            <span className="font-mono text-[#ec5757]">Target:</span>
+                                            <span className="font-mono text-[#FFFFFF] bg-gray-700 px-2 py-1 rounded text-xs">
                                                 {formatSelectedElementLabel(selectedElement)}
                                             </span>
-                                            <span className="text-indigo-600 bg-indigo-100/80  font-mono backdrop-blur-sm px-2 py-1 rounded-full shadow-sm">
+                                            <span className="text-[#FFFFFF] bg-gray-700 font-mono px-2 py-1 rounded text-xs">
                                                 {editMode ? 'Edit Mode' : 'Persistent'}
                                             </span>
                                         </div>
                                         <button
                                             onClick={clearSelectedElement}
-                                            className="text-indigo-600 hover:text-red-600 hover:bg-red-50/80 p-1.5 rounded-lg transition-all duration-200 hover:shadow-md backdrop-blur-sm flex-shrink-0"
+                                            className="  text-gray-400   p-1   rounded   transition-colors   hover:text-red-400 hover:bg-gradient-to-r hover:from-red-500/20 hover:to-pink-500/20"
                                             title="Clear selected element"
                                         >
-                                            <X size={14} />
+                                            <X size={12} />
                                         </button>
                                     </div>
                                 </div>
@@ -474,7 +483,7 @@ const ChatbotAIEditor = memo(() => {
                                 <div className="flex-1 relative">
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-3.5 pr-12 bg-white/80 backdrop-blur-sm border border-slate-300/50 rounded-2xl text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-300 shadow-lg hover:shadow-xl focus:shadow-2xl"
+                                        className="w-full px-4 py-3 pr-12 bg-[#1A1A1A] border border-gray-700 rounded-lg text-sm text-white placeholder-[#9CA3AF] focus:outline-none   transition-all shadow-lg"
                                         placeholder={
                                             editMode && selectedElement
                                                 ? `Modify the selected ${selectedElement.tagName} element...`
@@ -502,7 +511,8 @@ const ChatbotAIEditor = memo(() => {
                                     />
 
                                     <button
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-blue-600 hover:bg-blue-50/80 p-2 rounded-xl transition-all duration-200 backdrop-blur-sm hover:shadow-md"
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 hover:bg-gray-800/50 p-2 rounded-xl transition-all duration-200 backdrop-blur-sm hover:shadow-md"
+                                       
                                         onClick={() => fileInputRef.current && fileInputRef.current.click()}
                                         disabled={loading}
                                         title="Attach image"
@@ -512,7 +522,7 @@ const ChatbotAIEditor = memo(() => {
                                 </div>
 
                                 <button
-                                    className=" bg-blue-600   disabled:from-slate-400 disabled:to-slate-400 text-white p-4 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-100 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+                                    className=" bg-blue-500   disabled:from-slate-400 disabled:to-slate-400 text-white p-3 rounded-lg shadow-xl hover:shadow-2xl transition-all duration-100 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
                                     onClick={handleSend}
                                     disabled={
                                         loading || (!userPrompt.trim() && !image) || (editMode && !selectedElement)
@@ -525,30 +535,30 @@ const ChatbotAIEditor = memo(() => {
                                 </button>
                             </div>
                         </div>
-                    </div>
-
+                    </ResizablePanel>
+                    <ResizableHandle withHandle className="bg-[#2A2A2A] after:bg-[#2A2A2A]" />
                     {/* Preview/Code Panel */}
-                    <div className="lg:col-span-8 bg-white rounded-3xl shadow-xl border border-slate-200/60 flex flex-col overflow-hidden">
-                        <div className="flex justify-between items-center p-6 border-b border-slate-200/60">
-                            <div className="flex bg-slate-100 rounded-2xl p-1">
+                    <ResizablePanel defaultSize={65} minSize={35} className="bg-[#222222] rounded-r-sm shadow-xl flex flex-col overflow-hidden">
+                        <div className="flex justify-between items-center px-4 py-2 shadow-xl">
+                            <div className="flex bg-[#0F0F0F] rounded-lg p-1 shadow-lg">
                                 <button
-                                    className={`px-6 py-3 font-semibold text-sm rounded-xl transition-all duration-200 ${activeTab === 'preview'
-                                        ? 'bg-white text-blue-700 shadow-sm'
-                                        : 'text-slate-600 hover:text-blue-600'
+                                    className={`px-3 py-1.5 text-sm rounded  transition-all ease-in-out ${activeTab === 'preview'
+                                        ? 'bg-[#323333] text-[#FFFFFF] shadow-md'
+                                        : 'text-gray-300 '
                                         }`}
                                     onClick={() => setActiveTab('preview')}
                                 >
                                     Preview
                                     {code.jsx && code.css && componentCount > 1 && (
-                                        <span className="ml-2 bg-blue-100 text-blue-700 px-2 py-1 rounded-lg text-xs font-medium">
+                                        <span className="ml-2 bg-blue-600 text-white px-1 py-0.5 rounded text-xs">
                                             Modified
                                         </span>
                                     )}
                                 </button>
                                 <button
-                                    className={`px-6 py-3 font-semibold text-sm rounded-xl transition-all duration-200 ${activeTab === 'code'
-                                        ? 'bg-white text-blue-700 shadow-sm'
-                                        : 'text-slate-600 hover:text-blue-600'
+                                    className={`px-3 py-1.5 text-sm rounded transition-all ease-in-out ${activeTab === 'code'
+                                        ? 'bg-[#37383a] text-[#FFFFFF] shadow-md'
+                                        : 'text-gray-300'
                                         }`}
                                     onClick={() => setActiveTab('code')}
                                 >
@@ -556,30 +566,30 @@ const ChatbotAIEditor = memo(() => {
                                 </button>
                             </div>
 
-                            <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-sm font-medium text-slate-700">Edit Mode</span>
+                            <div className="flex items-center gap-3">
+                                <DownloadButton />
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-400">Edit </span>
                                     <button
-                                        onClick={() => {
-                                            setEditMode(!editMode);
-                                        }}
-                                        className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-200 ${editMode ? 'bg-gradient-to-r from-blue-600 to-indigo-600' : 'bg-slate-300'
-                                            }`}
-                                        title={editMode ? 'Disable edit mode' : 'Enable edit mode'}
-                                    >
-                                        <span
-                                            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${editMode ? 'translate-x-6' : 'translate-x-1'
-                                                }`}
-                                        />
-                                    </button>
+  onClick={() => setEditMode(!editMode)}
+  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shadow-sm 
+    ${editMode ? 'bg-cyan-500/80' : 'bg-gray-600/60'}`}
+  title={editMode ? 'Disable edit mode' : 'Enable edit mode'}
+>
+  <span
+    className={`inline-block h-3 w-3 transform rounded-full bg-gray-100 transition-transform 
+      ${editMode ? 'translate-x-5' : 'translate-x-1'}`}
+  />
+</button>
+
                                 </div>
                                 {selectedElement && (
                                     <button
                                         onClick={clearSelectedElement}
-                                        className="text-slate-500 hover:text-red-600 hover:bg-red-50 p-2 rounded-xl transition-all duration-200"
+                                        className="text-gray-400 hover:text-red-400 hover:bg-red-900/20 p-1.5 rounded transition-colors shadow-sm"
                                         title="Clear selection"
                                     >
-                                        <X size={16} />
+                                        <X size={14} />
                                     </button>
                                 )}
                             </div>
@@ -587,9 +597,9 @@ const ChatbotAIEditor = memo(() => {
 
                         <div className="flex-1 overflow-hidden">
                             {activeTab === 'preview' ? (
-                                <div className="h-full p-6">
+                                <div className="h-full ">
                                     {code.jsx ? (
-                                        <div className="h-full bg-slate-50 rounded-2xl border border-slate-200 overflow-auto">
+                                        <div className="h-full   overflow-auto">
                                             <Suspense fallback={<div className="p-6 text-slate-500">Loading preview...</div>}>
                                                 <DynamicPreview jsx={code.jsx} css={code.css} />
                                             </Suspense>
@@ -612,8 +622,8 @@ const ChatbotAIEditor = memo(() => {
                                 </Suspense>
                             )}
                         </div>
-                    </div>
-                </div>
+                    </ResizablePanel>
+                </ResizablePanelGroup>
             </div>
         </div>
     );

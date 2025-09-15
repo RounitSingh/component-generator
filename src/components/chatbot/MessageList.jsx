@@ -40,8 +40,8 @@ const MessageList = memo(({
         <div
             ref={chatContainerRef}
             onScroll={handleScroll}
-            className="flex-1 overflow-y-auto p-6 space-y-4 scroll-smooth"
-            style={{ maxHeight: 'calc(100vh - 280px)' }}
+            className="flex-1 overflow-y-auto p-6 h-full space-y-4  scroll-smooth thin-dark-scrollbar"
+            style={{ maxHeight: 'calc(100vh - 150px)' }}
         >
             {messages.map((msg, idx) => (
                 <MessageItem
@@ -54,13 +54,12 @@ const MessageList = memo(({
 
             {loading && (
                 <div className="flex justify-end">
-                    <div className="flex items-center gap-3 bg-gradient-to-r from-sky-100 to-cyan-100 text-sky-800 border border-sky-200 rounded-2xl px-4 py-3 shadow-sm">
-                        <Loader2 className="animate-spin h-4 w-4" />
+                    <div className="flex items-center gap-3 px-4 py-3 shadow-sm ring-1 ring-white/10 rounded-tl-3xl rounded-bl-3xl rounded-br-3xl rounded-tr-md bg-[#212223] text-slate-100 border border-white/5">
+                        <Loader2 className="animate-spin h-4 w-4 text-slate-300" />
                         <span className="text-sm">
-                            {code.jsx && code.css 
-                                ? (editMode && selectedElement ? 'Modifying selected element...' : 'Modifying component...') 
-                                : 'Generating component...'
-                            }
+                            {code.jsx && code.css
+                                ? (editMode && selectedElement ? 'Modifying selected element…' : 'Modifying component…')
+                                : 'Generating component…'}
                         </span>
                     </div>
                 </div>

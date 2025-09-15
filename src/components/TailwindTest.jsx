@@ -1,37 +1,65 @@
 import React from 'react';
+import { Button } from './ui/button';
 
 const TailwindTest = () => {
   return (
-    <div className="p-8 bg-gradient-to-r from-blue-500 to-purple-600 min-h-screen">
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">
-          Tailwind CSS Test
-        </h2>
-        <p className="text-gray-600 mb-4">
-          If you can see this styled component, Tailwind CSS is working
-          correctly!
-        </p>
+    <div className="p-8 space-y-4">
+      <h1 className="text-3xl font-bold text-foreground mb-6">
+        Tailwind CSS & shadcn/ui Test
+      </h1>
+      
+      {/* Test basic Tailwind classes */}
+      <div className="space-y-4">
+        <div className="p-4 bg-card border border-border rounded-lg">
+          <h2 className="text-xl font-semibold text-card-foreground mb-2">
+            Basic Tailwind Test
+          </h2>
+          <p className="text-muted-foreground">
+            This should have proper colors and styling from Tailwind CSS.
+          </p>
+        </div>
+        
+        {/* Test shadcn/ui Button component */}
         <div className="space-y-2">
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-            <span className="text-sm text-gray-700">
-              Green dot - Tailwind is working
-            </span>
+          <h3 className="text-lg font-medium text-foreground">shadcn/ui Button Test</h3>
+          <div className="flex gap-2 flex-wrap">
+            <Button variant="default">Default</Button>
+            <Button variant="secondary">Secondary</Button>
+            <Button variant="outline">Outline</Button>
+            <Button variant="destructive">Destructive</Button>
+            <Button variant="ghost">Ghost</Button>
+            <Button variant="link">Link</Button>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-red-500 rounded-full"></div>
-            <span className="text-sm text-gray-700">
-              Red dot - Something is wrong
-            </span>
+          
+          <div className="flex gap-2 flex-wrap">
+            <Button size="sm">Small</Button>
+            <Button size="default">Default</Button>
+            <Button size="lg">Large</Button>
+            <Button size="icon">🎨</Button>
           </div>
         </div>
-        <div className="mt-6 grid grid-cols-2 gap-4">
-          <button className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition-colors">
-            Primary Button
-          </button>
-          <button className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded transition-colors">
-            Secondary Button
-          </button>
+        
+        {/* Test color system */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="p-4 bg-primary text-primary-foreground rounded-lg">
+            Primary
+          </div>
+          <div className="p-4 bg-secondary text-secondary-foreground rounded-lg">
+            Secondary
+          </div>
+          <div className="p-4 bg-muted text-muted-foreground rounded-lg">
+            Muted
+          </div>
+          <div className="p-4 bg-accent text-accent-foreground rounded-lg">
+            Accent
+          </div>
+        </div>
+        
+        {/* Test dark mode toggle */}
+        <div className="p-4 border border-border rounded-lg">
+          <p className="text-sm text-muted-foreground">
+            Toggle dark mode to test color system changes
+          </p>
         </div>
       </div>
     </div>
