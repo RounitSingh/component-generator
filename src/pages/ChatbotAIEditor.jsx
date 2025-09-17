@@ -1,7 +1,7 @@
 
 
 import React, { useRef, useState, useEffect, useCallback, memo, lazy, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Send, Image as ImageIcon, Loader2, StarsIcon, X, Plus, Menu, EllipsisVertical } from 'lucide-react';
 import DownloadButton from '../components/DownloadButton';
 import useDownloadStore from '../store/downloadStore';
@@ -34,6 +34,7 @@ import {
 
 const ChatbotAIEditor = memo(() => {
     const navigate = useNavigate();
+    const { id: routeConversationId } = useParams();
     const { logout } = useAuthStore();
     const {
         messages,
@@ -88,7 +89,7 @@ const ChatbotAIEditor = memo(() => {
         clearComponentError();
     }, [clearComponentError]);
 
-    // Initialize: ensure session, pick/create conversation, load messages
+    // Initialize and re-run when route conversation changes
     useEffect(() => {
         const abortController = createAbortController();
 
@@ -105,7 +106,26 @@ const ChatbotAIEditor = memo(() => {
 
                 // // console.log('📊 [Conversation Init] Found conversations:', convs?.length || 0);
 
-                let conv = Array.isArray(convs) ? [...convs].sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0)).find(c => c.isActive) : null;
+                let conv = null;
+                if (routeConversationId) {
+                    conv = Array.isArray(convs) ? convs.find(c => c.id === routeConversationId) : null;
+                }
+                if (!conv) {
+                    try {
+                        const lastId = localStorage.getItem('lastConversationId');
+                        if (lastId) {
+                            conv = Array.isArray(convs) ? convs.find(c => c.id === lastId) : null;
+                            if (conv && routeConversationId !== lastId) {
+                                navigate(`/chat/${lastId}`, { replace: true });
+                            }
+                        }
+                    } catch {
+                        // ignore storage errors
+                    }
+                }
+                if (!conv) {
+                    conv = Array.isArray(convs) ? [...convs].sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0)).find(c => c.isActive) : null;
+                }
                 if (!conv) {
                     // // console.log('🆕 [Conversation Init] No active conversation, creating new...');
                     conv = await createConversation({ title: 'ChatbotAIEditor Conversation' });
@@ -119,6 +139,12 @@ const ChatbotAIEditor = memo(() => {
 
                 // Store conversation ID in state for persistence
                 setConversationId(conv.id);
+                try { localStorage.setItem('lastConversationId', conv.id); } catch {
+                    // 
+                }
+                if (routeConversationId && routeConversationId !== conv.id) {
+                    navigate(`/chat/${conv.id}`, { replace: true });
+                }
 
                 // Load messages for conversation
                 // // console.log('📨 [Messages Init] Loading messages for conversation:', conv.id);
@@ -151,9 +177,24 @@ const ChatbotAIEditor = memo(() => {
                 // // console.log('✅ [Messages Init] Messages loaded:', frontendMsgs.length);
 
                 // Restore latest JSX/CSS component if present, else clear
-                const latestAssistantWithComponent = items.find(m => m.role === 'ai' && (m.type === 'jsx' || m.data?.component?.jsx));
-                const latestComponent = latestAssistantWithComponent?.data?.component;
-                const newCode = { jsx: latestComponent?.jsx || '', css: latestComponent?.css || '' };
+                // Prefer details endpoint if available to load components; fallback to last assistant JSX component in messages
+                let newCode = { jsx: '', css: '' };
+                try {
+                    const details = await import('../utils/api').then(m => m.getConversationDetails(conv.id, { messagesLimit: 200 }));
+                    const comps = details?.components || details?.data?.components || [];
+                    const latest = comps[0];
+                    if (latest?.data?.jsx || latest?.data?.css) {
+                        newCode = { jsx: latest.data.jsx || '', css: latest.data.css || '' };
+                    } else {
+                        const latestAssistantWithComponent = items.find(m => m.role === 'ai' && (m.type === 'jsx' || m.data?.component?.jsx));
+                        const latestComponent = latestAssistantWithComponent?.data?.component;
+                        newCode = { jsx: latestComponent?.jsx || '', css: latestComponent?.css || '' };
+                    }
+                } catch {
+                    const latestAssistantWithComponent = items.find(m => m.role === 'ai' && (m.type === 'jsx' || m.data?.component?.jsx));
+                    const latestComponent = latestAssistantWithComponent?.data?.component;
+                    newCode = { jsx: latestComponent?.jsx || '', css: latestComponent?.css || '' };
+                }
                 setCode(newCode);
                 setDownloadCode(newCode);
                 // // console.log('🎨 [Component Init] Component set from conversation');
@@ -189,7 +230,7 @@ const ChatbotAIEditor = memo(() => {
         return () => {
             abortController.abort();
         };
-    }, [setMessages, createAbortController, navigate, logout, setDownloadCode]);
+    }, [setMessages, createAbortController, navigate, logout, setDownloadCode, routeConversationId]);
 
     const handleSend = useCallback(async () => {
         if (!userPrompt.trim() && !image) return;
@@ -383,27 +424,40 @@ const ChatbotAIEditor = memo(() => {
         }
     }, []);
 
-    const handleClearChat = useCallback(() => {
-        setShowScrollButton(false);
-        setEditMode(false);
-        clearSelectedElement();
-        clearMessages();
-        clearComponents();
-        setCode({ jsx: '', css: '' });
-        setError('');
-        clearCode();
-    }, [setEditMode, clearSelectedElement, clearMessages, clearComponents, clearCode]);
+    const handleNewChat = useCallback(async () => {
+        try {
+            setShowScrollButton(false);
+            setEditMode(false);
+            clearSelectedElement();
+            clearMessages();
+            clearComponents();
+            setCode({ jsx: '', css: '' });
+            setError('');
+            clearCode();
+            const newConv = await createConversation({ title: 'New Chat' });
+            setConversationId(newConv.id);
+            try { localStorage.setItem('lastConversationId', newConv.id); } catch {
+                // 
+            }
+            navigate(`/chat/${newConv.id}`);
+        } catch (e) {
+        console.log("failed to start new chat ",e);
+            setError('Failed to start new chat');
+        }
+    }, [setEditMode, clearSelectedElement, clearMessages, clearComponents, clearCode, navigate]);
 
     // Download handled by Zustand store
 
     if (initializing || !isDataReady) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 flex items-center justify-center">
-                <div className="text-center">
-                    <Loader2 className="animate-spin h-8 w-8 mx-auto mb-4 text-blue-600" />
-                    <p className="text-gray-600">Preparing your workspace...</p>
-                </div>
-            </div>
+             <div className="min-h-screen bg-[#1B1B1B] flex items-center justify-center">
+      <div className="text-center space-y-6">
+        <div className="relative">
+          <div className="w-12 h-12 mx-auto border-2 border-gray-800 border-t-white rounded-full animate-spin"></div>
+        </div>
+        <p className="text-gray-300 text-sm font-light">Preparing your workspace...</p>
+      </div>
+    </div>
         );
     }
 
@@ -415,8 +469,8 @@ const ChatbotAIEditor = memo(() => {
                         {/* Header */}
                        <div className="flex  justify-end items-center p-3 shadow-md ">
                             <div className="flex  w-full items-center justify-between gap-2">
-                             <button
-                                    onClick={handleClearChat}
+                                <button
+                                    onClick={handleNewChat}
                                     className="flex text-semibold items-center gap-1 hover:bg-[#2d2d2e] cursor-pointer  text-gray-300 hover:text-gray-200  px-2 py-1.5 rounded-lg transition-colors text-sm"
                                     title="New Chat"
                                 >
@@ -605,10 +659,10 @@ const ChatbotAIEditor = memo(() => {
                                             </Suspense>
                                         </div>
                                     ) : (
-                                        <div className="h-full flex items-center justify-center text-slate-400">
+                                        <div className="h-full flex items-center justify-center text-white/50">
                                             <div className="text-center">
-                                                <div className="w-16 h-16 bg-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                                    <StarsIcon className="w-8 h-8 text-slate-400" />
+                                                <div className="w-16 h-16 bg-slate-200/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                                    <StarsIcon className="w-8 h-8 text-white/50" />
                                                 </div>
                                                 <p className="text-lg font-medium">No component generated yet</p>
                                                 <p className="text-sm mt-2">Start by describing your component in the chat</p>

@@ -605,6 +605,20 @@ export const deleteSession = async (sessionId) => {
 export const listConversations = async () => {
   try {
     const res = await api.get('/api/conversations');
+    const data = handleApiResponse(res);
+    return Array.isArray(data) ? data : (data?.items || []);
+  } catch (error) {
+    handleApiError(error);
+  }
+};
+
+export const listConversationsPage = async ({ limit = 10, cursor = null, activeOnly = true } = {}) => {
+  try {
+    const params = new URLSearchParams();
+    if (limit) params.set('limit', String(limit));
+    if (cursor) params.set('cursor', cursor);
+    if (activeOnly !== undefined) params.set('activeOnly', String(Boolean(activeOnly)));
+    const res = await api.get(`/api/conversations?${params.toString()}`);
     return handleApiResponse(res);
   } catch (error) {
     handleApiError(error);
@@ -623,6 +637,55 @@ export const createConversation = async (payload) => {
 export const getConversation = async (conversationId) => {
   try {
     const res = await api.get(`/api/conversations/${conversationId}`);
+    return handleApiResponse(res);
+  } catch (error) {
+    handleApiError(error);
+  }
+};
+
+export const getConversationDetails = async (conversationId, { messagesLimit } = {}) => {
+  try {
+    const params = new URLSearchParams();
+    params.set('include', 'details');
+    if (messagesLimit) params.set('messagesLimit', String(messagesLimit));
+    const res = await api.get(`/api/conversations/${conversationId}?${params.toString()}`);
+    return handleApiResponse(res);
+  } catch (error) {
+    handleApiError(error);
+  }
+};
+
+// Components endpoints (optional use in future UI)
+export const listComponentsByConversation = async (conversationId) => {
+  try {
+    const res = await api.get(`/api/conversations/${conversationId}/components`);
+    return handleApiResponse(res);
+  } catch (error) {
+    handleApiError(error);
+  }
+};
+
+export const createComponent = async (conversationId, payload) => {
+  try {
+    const res = await api.post(`/api/conversations/${conversationId}/components`, payload);
+    return handleApiResponse(res);
+  } catch (error) {
+    handleApiError(error);
+  }
+};
+
+export const updateComponent = async (componentId, payload) => {
+  try {
+    const res = await api.patch(`/api/components/${componentId}`, payload);
+    return handleApiResponse(res);
+  } catch (error) {
+    handleApiError(error);
+  }
+};
+
+export const deleteComponent = async (componentId) => {
+  try {
+    const res = await api.delete(`/api/components/${componentId}`);
     return handleApiResponse(res);
   } catch (error) {
     handleApiError(error);
@@ -660,7 +723,22 @@ export const listMessagesByConversation = async (conversationId) => {
 export const createMessage = async (payload) => {
   try {
     const res = await api.post('/api/messages', payload);
-    return handleApiResponse(res);
+    const saved = handleApiResponse(res);
+    try {
+      // Best-effort: if conversation title is generic and this is the first user message,
+      // update conversation title using the message text (first 60 chars)
+      const text = payload?.data?.text || '';
+      if (payload?.role === 'user' && text && payload?.conversationId) {
+        const trimmed = text.replace(/\s+/g, ' ').trim().slice(0, 60);
+        if (trimmed) {
+          // Fire and forget; UI will refresh titles via list fetch or optimistic update
+          updateConversation(payload.conversationId, { title: trimmed }).catch(() => {});
+        }
+      }
+    } catch {
+      // 
+    }
+    return saved;
   } catch (error) {
     handleApiError(error);
   }

@@ -28,6 +28,9 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import useAuthStore from "@/store/authStore"
+import useChatListStore from "@/store/chatListStore"
+import useChatSessionStore from "@/store/chatSessionStore"
+import { useNavigate } from "react-router-dom"
 
 // This is sample data.
 const data = {
@@ -61,6 +64,28 @@ export function AppSidebar({
   ...props
 }) {
    const { user } = useAuthStore();
+   const navigate = useNavigate();
+   const conversations = useChatListStore((s) => s.conversations);
+   const hasMore = useChatListStore((s) => s.hasMore);
+   const loading = useChatListStore((s) => s.loading);
+  const fetchNextPage = useChatListStore((s) => s.fetchNextPage);
+  const createConversation = useChatListStore((s) => s.createConversation);
+  const upsertConversation = useChatListStore((s) => s.upsertConversation);
+  const renameConversation = useChatListStore((s) => s.renameConversation);
+   const selectConversation = useChatSessionStore((s) => s.selectConversation);
+
+   React.useEffect(() => {
+     fetchNextPage({ limit: 10 });
+    // Try restore last selected conversation for quick nav in sidebar mount
+    try {
+      const lastId = localStorage.getItem('lastConversationId');
+      if (lastId) {
+        selectConversation(lastId);
+      }
+    } catch {
+      // ignore
+    }
+   }, [fetchNextPage]);
   return (
     <Sidebar
       collapsible="icon"
@@ -71,9 +96,33 @@ export function AppSidebar({
         <SidebarTrigger className=""  />
       </SidebarHeader>
       <SidebarContent className="gap-3">
-        <NavPrimary items={data.primary} onNewChat={() => { /* hook up to action */ }} />
+        <NavPrimary items={data.primary} onNewChat={async () => {
+          const row = await createConversation({ title: 'New Chat' });
+          upsertConversation({ ...row });
+          await selectConversation(row.id);
+          try { localStorage.setItem('lastConversationId', row.id); } catch {
+            // 
+          }
+          navigate(`/chat/${row.id}`);
+        }} />
         <div className="thin-dark-scrollbar overflow-y-auto pr-1 group-data-[collapsible=icon]:hidden">
-          <NavRecents items={data.recents} />
+          <NavRecents
+            items={conversations}
+            onSelect={(item) => { selectConversation(item.id); try { localStorage.setItem('lastConversationId', item.id); } catch {
+              // 
+            };
+             navigate(`/chat/${item.id}`); }}
+            onLoadMore={() => fetchNextPage({ limit: 10 })}
+            hasMore={hasMore}
+            loading={loading}
+            onRename={async (item, title) => {
+              try {
+                await renameConversation(item.id, title);
+              } catch (e) {
+                console.error('Failed to rename conversation', e);
+              }
+            }}
+          />
         </div>
       </SidebarContent>
       <SidebarFooter className="border-t border-neutral-800">
