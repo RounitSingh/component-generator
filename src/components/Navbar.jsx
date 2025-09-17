@@ -223,7 +223,7 @@ const Navbar = () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     logout();
-    navigate('/login');
+    navigate('/');
     setIsMobileMenuOpen(false);
     setShowUserMenu(false);
   };

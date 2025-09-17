@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ChatbotAIEditor from './pages/ChatbotAIEditor';
 import Navbar from './components/Navbar';
+import LayoutWithSidebar from './components/LayoutWithSidebar';
 import TailwindTest from './components/TailwindTest';
 import ReactLiveCheck from './pages/ReactLiveCheck';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -40,21 +41,21 @@ const App = () => {
     hydrateUser();
   }, [setUser, logout]);
 
-  const hideNavbar = location.pathname === "/login" || location.pathname === "/signup";
-    const isHomePage = location.pathname === "/";
+  const isHomePage = location.pathname === "/";
+  const showNavbar = isHomePage;
 
   return (
     <div className={`min-h-screen ${isHomePage ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-black' : 'bg-slate-900'}`}>
-      {!hideNavbar && <Navbar />}
+      {showNavbar && <Navbar />}
       <div>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route element={<ProtectedRoute />}>
-            <Route path="/chatbot" element={<ChatbotAIEditor />} />
-            <Route path="/tailwind-test" element={<TailwindTest />} />
-            <Route path="/react-live-check" element={<ReactLiveCheck />} />
+            <Route path="/chatbot" element={<LayoutWithSidebar><ChatbotAIEditor /></LayoutWithSidebar>} />
+            <Route path="/tailwind-test" element={<LayoutWithSidebar><TailwindTest /></LayoutWithSidebar>} />
+            <Route path="/react-live-check" element={<LayoutWithSidebar><ReactLiveCheck /></LayoutWithSidebar>} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
