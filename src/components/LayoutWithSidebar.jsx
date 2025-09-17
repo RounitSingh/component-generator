@@ -23,8 +23,8 @@ export default function LayoutWithSidebar({ children }) {
       <AppSidebar />
       <SidebarInset>
       {isMobile && (
-          <SidebarHeader>
-            <div className="flex items-center justify-between">
+          <SidebarHeader className="bg-[#2A2A2A] border-b border-b-neutral-700 ">
+            <div className="flex items-center justify-between text-white/60">
               <SidebarTrigger className="lg:hidden" />
             </div>
           </SidebarHeader>
