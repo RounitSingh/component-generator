@@ -465,7 +465,7 @@ const ChatbotAIEditor = memo(() => {
         <div className="min-h-screen  font-inter ">
             <div className=" mx-auto  h-screen">
                 <ResizablePanelGroup direction="horizontal" className="h-full">
-                    <ResizablePanel defaultSize={35} minSize={24} className="bg-[#1B1B1B] rounded-l-sm shadow-xl flex flex-col item-center justify-between overflow-hidden">
+                    <ResizablePanel defaultSize={35}  className="bg-[#1B1B1B] rounded-l-sm shadow-xl flex flex-col item-center justify-between overflow-hidden">
                         {/* Header */}
                        <div className="flex  justify-end items-center p-3 shadow-md ">
                             <div className="flex  w-full items-center justify-between gap-2">
@@ -592,7 +592,7 @@ const ChatbotAIEditor = memo(() => {
                     </ResizablePanel>
                     <ResizableHandle withHandle className="bg-[#2A2A2A] after:bg-[#2A2A2A]" />
                     {/* Preview/Code Panel */}
-                    <ResizablePanel defaultSize={65} minSize={35} className="bg-[#222222] rounded-r-sm shadow-xl flex flex-col overflow-hidden">
+                    <ResizablePanel defaultSize={65}  className="bg-[#222222] rounded-r-sm shadow-xl flex flex-col overflow-hidden">
                         <div className="flex justify-between items-center px-4 py-2 shadow-xl">
                             <div className="flex bg-[#0F0F0F] rounded-lg p-1 shadow-lg">
                                 <button

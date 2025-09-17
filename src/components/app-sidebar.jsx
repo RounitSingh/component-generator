@@ -31,6 +31,7 @@ import useAuthStore from "@/store/authStore"
 import useChatListStore from "@/store/chatListStore"
 import useChatSessionStore from "@/store/chatSessionStore"
 import { useNavigate } from "react-router-dom"
+import { useIsMobile } from "./hooks/use-mobile"
 
 // This is sample data.
 const data = {
@@ -86,6 +87,7 @@ export function AppSidebar({
       // ignore
     }
    }, [fetchNextPage]);
+   const isMobile = useIsMobile();
   return (
     <Sidebar
       collapsible="icon"
@@ -93,7 +95,8 @@ export function AppSidebar({
       className="bg-[#1B1B1B] text-neutral-200 border-r border-neutral-800 [&_[data-slot=sidebar-inner]]:bg-[#1B1B1B]"
       {...props}>
       <SidebarHeader>
-        <SidebarTrigger className=""  />
+        <SidebarTrigger className={isMobile ? "text-white/60" : ""} />
+
       </SidebarHeader>
       <SidebarContent className="gap-3">
         <NavPrimary items={data.primary} onNewChat={async () => {
