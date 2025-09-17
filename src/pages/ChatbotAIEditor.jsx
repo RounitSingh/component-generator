@@ -128,7 +128,7 @@ const ChatbotAIEditor = memo(() => {
                 }
                 if (!conv) {
                     // // console.log('🆕 [Conversation Init] No active conversation, creating new...');
-                    conv = await createConversation({ title: 'ChatbotAIEditor Conversation' });
+                    conv = await createConversation({ title: 'untitled' });
 
                     if (abortController.signal.aborted) return;
 
