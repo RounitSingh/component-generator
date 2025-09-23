@@ -22,7 +22,7 @@ class NavigationService {
   // Check if current route is protected
   isProtectedRoute(path = null) {
     const currentPath = path || this.getCurrentPath();
-    const protectedRoutes = ['/chatbot', '/tailwind-test', '/react-live-check'];
+    const protectedRoutes = ['/chat', '/tailwind-test', '/react-live-check'];
     return protectedRoutes.some(route => currentPath.startsWith(route));
   }
 
@@ -57,12 +57,12 @@ class NavigationService {
     }
   }
 
-  // Navigate to main app (chatbot)
+  // Navigate to main app (chat)
   goToApp(replace = true) {
     if (this.navigator) {
-      this.navigator('/chatbot', { replace });
+      this.navigator('/chat', { replace });
     } else {
-      window.location.href = '/chatbot';
+      window.location.href = '/chat';
     }
   }
 
@@ -105,7 +105,7 @@ class NavigationService {
       return currentPath;
     } else {
       // Otherwise, go to main app
-      return '/chatbot';
+      return '/chat';
     }
   }
 }

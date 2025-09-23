@@ -147,6 +147,8 @@ import {
 } from "@/components/ui/sidebar";
 
 import useAuthStore from "@/store/authStore";
+import useChatListStore from "@/store/chatListStore";
+import useChatSessionStore from "@/store/chatSessionStore";
 import { useNavigate } from "react-router-dom";
 
 // Helper to get initials
@@ -182,10 +184,15 @@ export function NavUser({user}) {
   const { logout } = useAuthStore();
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
+  const resetChatList = useChatListStore((s) => s.reset);
+  const resetChatSession = useChatSessionStore((s) => s.reset);
 
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
+    // Clear in-memory chat state to avoid leaking previous user's data
+    resetChatSession();
+    resetChatList();
     logout();
     navigate("/");
   };

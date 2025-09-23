@@ -21,8 +21,8 @@ export const useAuth = () => {
   const loginWithNavigation = useCallback(async (userData, accessToken, refreshToken) => {
     await login(userData, accessToken, refreshToken);
     
-    // Navigate to chatbot after login
-    navigate('/chatbot', { replace: true });
+    // Navigate to chat after login
+    navigate('/chat', { replace: true });
   }, [login, navigate]);
 
   // Simple logout with navigation

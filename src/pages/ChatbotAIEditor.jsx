@@ -6,6 +6,7 @@ import { Send, Image as ImageIcon, Loader2, StarsIcon, X, Plus, Menu, EllipsisVe
 import DownloadButton from '../components/DownloadButton';
 import useDownloadStore from '../store/downloadStore';
 import useChatbotChatStore from '../store/chatbotChatStore';
+import useChatListStore from '../store/chatListStore';
 import useChatbotComponentStore from '../store/chatbotComponentStore';
 import { generateComponentWithGemini } from '../utils/geminiApi';
 // Lazy-load heavy subcomponents to reduce initial render cost
@@ -18,6 +19,7 @@ import {
     createConversation,
     listMessagesByConversation,
     createMessage,
+    updateConversation,
 } from '../utils/api';
 import useAuthStore from '../store/authStore';
 import {
@@ -35,7 +37,7 @@ import {
 const ChatbotAIEditor = memo(() => {
     const navigate = useNavigate();
     const { id: routeConversationId } = useParams();
-    const { logout } = useAuthStore();
+    const { user, logout } = useAuthStore();
     const {
         messages,
         addMessage,
@@ -76,6 +78,7 @@ const ChatbotAIEditor = memo(() => {
     const [isDataReady, setIsDataReady] = useState(false);
 
     const fileInputRef = useRef(null);
+    const upsertConversation = useChatListStore((s) => s.upsertConversation);
   
     // Memoized values
     const processedMessages = useProcessedMessages(messages);
@@ -89,7 +92,7 @@ const ChatbotAIEditor = memo(() => {
         clearComponentError();
     }, [clearComponentError]);
 
-    // Initialize and re-run when route conversation changes
+    // Initialize and re-run when route conversation changes or user changes
     useEffect(() => {
         const abortController = createAbortController();
 
@@ -110,19 +113,7 @@ const ChatbotAIEditor = memo(() => {
                 if (routeConversationId) {
                     conv = Array.isArray(convs) ? convs.find(c => c.id === routeConversationId) : null;
                 }
-                if (!conv) {
-                    try {
-                        const lastId = localStorage.getItem('lastConversationId');
-                        if (lastId) {
-                            conv = Array.isArray(convs) ? convs.find(c => c.id === lastId) : null;
-                            if (conv && routeConversationId !== lastId) {
-                                navigate(`/chat/${lastId}`, { replace: true });
-                            }
-                        }
-                    } catch {
-                        // ignore storage errors
-                    }
-                }
+                // Do not use localStorage to restore conversations. Always rely on backend list
                 if (!conv) {
                     conv = Array.isArray(convs) ? [...convs].sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0)).find(c => c.isActive) : null;
                 }
@@ -139,9 +130,7 @@ const ChatbotAIEditor = memo(() => {
 
                 // Store conversation ID in state for persistence
                 setConversationId(conv.id);
-                try { localStorage.setItem('lastConversationId', conv.id); } catch {
-                    // 
-                }
+                // No localStorage writes for conversation id
                 if (routeConversationId && routeConversationId !== conv.id) {
                     navigate(`/chat/${conv.id}`, { replace: true });
                 }
@@ -212,9 +201,6 @@ const ChatbotAIEditor = memo(() => {
                 const status = e?.response?.status || e?.status;
                 if (status === 401 || status === 403) {
                     logout();
-                    localStorage.removeItem('accessToken');
-                    localStorage.removeItem('refreshToken');
-                    localStorage.removeItem('sessionId');
                     navigate('/login', { replace: true });
                     return;
                 }
@@ -230,7 +216,7 @@ const ChatbotAIEditor = memo(() => {
         return () => {
             abortController.abort();
         };
-    }, [setMessages, createAbortController, navigate, logout, setDownloadCode, routeConversationId]);
+    }, [setMessages, createAbortController, navigate, logout, setDownloadCode, routeConversationId, user?.id]);
 
     const handleSend = useCallback(async () => {
         if (!userPrompt.trim() && !image) return;
@@ -267,6 +253,17 @@ const ChatbotAIEditor = memo(() => {
             // Local add first for snappy UI
             addMessage(promptMsg);
             // // console.log('⚡ [Message Send] Message added to local state');
+
+            // If this is the first prompt of the conversation, rename conversation to prompt text
+            if (conversationId && messages.length === 0) {
+                const trimmedTitle = userPrompt.replace(/\s+/g, ' ').trim().slice(0, 60);
+                if (trimmedTitle) {
+                    // Optimistically update sidebar title
+                    upsertConversation({ id: conversationId, title: trimmedTitle, updatedAt: new Date().toISOString() });
+                    // Persist title change
+                    updateConversation(conversationId, { title: trimmedTitle }).catch(() => {});
+                }
+            }
 
             // Persist user message to backend if conversation exists
             if (conversationId) {
@@ -436,9 +433,7 @@ const ChatbotAIEditor = memo(() => {
             clearCode();
             const newConv = await createConversation({ title: 'New Chat' });
             setConversationId(newConv.id);
-            try { localStorage.setItem('lastConversationId', newConv.id); } catch {
-                // 
-            }
+            // No localStorage writes for conversation id
             navigate(`/chat/${newConv.id}`);
         } catch (e) {
         console.log("failed to start new chat ",e);
@@ -603,11 +598,6 @@ const ChatbotAIEditor = memo(() => {
                                     onClick={() => setActiveTab('preview')}
                                 >
                                     Preview
-                                    {code.jsx && code.css && componentCount > 1 && (
-                                        <span className="ml-2 bg-blue-600 text-white px-1 py-0.5 rounded text-xs">
-                                            Modified
-                                        </span>
-                                    )}
                                 </button>
                                 <button
                                     className={`px-3 py-1.5 text-sm rounded transition-all ease-in-out ${activeTab === 'code'

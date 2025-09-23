@@ -50,7 +50,7 @@ const Login = () => {
       
       const user = await getProfile();
       setUser(user);
-       navigate('/chatbot', { replace: true });
+       navigate('/chat', { replace: true });
     } catch (err) {
       console.error('❌ [Login] Login failed:', err.response?.data?.message || err.message);
       

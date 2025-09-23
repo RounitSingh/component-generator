@@ -53,11 +53,9 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route element={<ProtectedRoute />}>
-            <Route path="/chatbot" element={<LayoutWithSidebar><ChatbotAIEditor /></LayoutWithSidebar>} />
+            <Route path="/chat" element={<LayoutWithSidebar><ChatbotAIEditor /></LayoutWithSidebar>} />
             <Route path="/chat/:id" element={<LayoutWithSidebar><ChatbotAIEditor /></LayoutWithSidebar>} />
-            <Route path="/tailwind-test" element={<LayoutWithSidebar><TailwindTest /></LayoutWithSidebar>} />
-            <Route path="/react-live-check" element={<LayoutWithSidebar><ReactLiveCheck /></LayoutWithSidebar>} />
-          </Route>
+           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

@@ -282,7 +282,7 @@ const Navbar = () => {
                 <>
                   {/* AI Generator Link */}
                   <Link 
-                    to="/chatbot" 
+                    to="/chat" 
                     className="group flex items-center gap-2 px-4 py-2 rounded-lg text-gray-300 hover:text-white transition-all duration-300 hover:bg-white/5 border border-transparent hover:border-cyan-500/20"
                   >
                     <Sparkles className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform duration-300" />
@@ -425,7 +425,7 @@ const Navbar = () => {
 
                     {/* AI Generator Link */}
                     <Link
-                      to="/chatbot"
+                      to="/chat"
                       className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-300 group"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >

@@ -49,8 +49,8 @@ const data = {
     
   ],
   primary: [
-    { title: "Chats", url: "/chatbot", isActive: false },
-    { title: "Archived", url: "/chatbot/archived", isActive: false },
+    { title: "Chats", url: "/chat", isActive: false },
+    { title: "Archived", url: "/chat/archived", isActive: false },
   ],
   recents: [
     { id: "1", title: "Modern Dark UI Design Styling", url: "#" },
@@ -73,20 +73,23 @@ export function AppSidebar({
   const createConversation = useChatListStore((s) => s.createConversation);
   const upsertConversation = useChatListStore((s) => s.upsertConversation);
   const renameConversation = useChatListStore((s) => s.renameConversation);
+  const resetChatList = useChatListStore((s) => s.reset);
    const selectConversation = useChatSessionStore((s) => s.selectConversation);
+  const resetChatSession = useChatSessionStore((s) => s.reset);
 
-   React.useEffect(() => {
-     fetchNextPage({ limit: 10 });
-    // Try restore last selected conversation for quick nav in sidebar mount
-    try {
-      const lastId = localStorage.getItem('lastConversationId');
-      if (lastId) {
-        selectConversation(lastId);
-      }
-    } catch {
-      // ignore
-    }
-   }, [fetchNextPage]);
+  // On user change: clear in-memory chat data and fetch fresh from backend
+  React.useEffect(() => {
+    // Reset sidebar conversations and any per-conversation session state
+    resetChatSession();
+    resetChatList();
+    // Fetch initial page for the current user
+    fetchNextPage({ limit: 10 });
+  }, [resetChatList, resetChatSession, fetchNextPage, user?.id]);
+
+  const handleSelectRecent = React.useCallback((item) => {
+    selectConversation(item.id);
+    navigate(`/chat/${item.id}`);
+  }, [selectConversation, navigate]);
    const isMobile = useIsMobile();
   return (
     <Sidebar
@@ -103,18 +106,12 @@ export function AppSidebar({
           const row = await createConversation({ title: 'New Chat' });
           upsertConversation({ ...row });
           await selectConversation(row.id);
-          try { localStorage.setItem('lastConversationId', row.id); } catch {
-            // 
-          }
           navigate(`/chat/${row.id}`);
         }} />
         <div className="thin-dark-scrollbar overflow-y-auto pr-1 group-data-[collapsible=icon]:hidden">
           <NavRecents
             items={conversations}
-            onSelect={(item) => { selectConversation(item.id); try { localStorage.setItem('lastConversationId', item.id); } catch {
-              // 
-            };
-             navigate(`/chat/${item.id}`); }}
+            onSelect={handleSelectRecent}
             onLoadMore={() => fetchNextPage({ limit: 10 })}
             hasMore={hasMore}
             loading={loading}

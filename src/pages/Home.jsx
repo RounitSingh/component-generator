@@ -31,7 +31,7 @@ const Home = () => {
     const t =  Boolean(localStorage.getItem('accessToken'));
     setIsLoggedIn(t);
     console.log("isLoggedIn", t);
-  })
+  }, [])
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -239,7 +239,7 @@ const Home = () => {
             {isLoggedIn ? (
               <button
                 type="button"
-                onClick={() => navigate('/chatbot')}
+                onClick={() => navigate('/chat')}
                 className="group relative bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-10 py-5 rounded-2xl font-bold text-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -402,7 +402,7 @@ const Home = () => {
                   {isLoggedIn ? (
                     <button
                       type="button"
-                      onClick={() => navigate('/chatbot')}
+                      onClick={() => navigate('/chat')}
                       className="group relative bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-12 py-6 rounded-2xl font-bold text-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 inline-flex items-center justify-center overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -443,7 +443,7 @@ const Home = () => {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes float {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
           25% { transform: translateY(-10px) rotate(1deg); }

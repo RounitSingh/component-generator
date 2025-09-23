@@ -8,13 +8,17 @@ const useChatSessionStore = create((set, get) => ({
   loadingByConversationId: {},
   errorByConversationId: {},
 
+  // Clear all in-memory session state (used on logout or user switch)
+  reset: () => set({
+    currentConversationId: null,
+    messagesByConversationId: {},
+    componentsByConversationId: {},
+    loadingByConversationId: {},
+    errorByConversationId: {},
+  }),
+
   selectConversation: async (conversationId) => {
     set({ currentConversationId: conversationId });
-    try {
-      localStorage.setItem('lastConversationId', conversationId);
-    } catch {
-      // ignore storage errors
-    }
     const loaded = get().messagesByConversationId[conversationId];
     if (!loaded) {
       await get().fetchConversationDetail(conversationId);
