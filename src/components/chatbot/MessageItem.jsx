@@ -36,8 +36,8 @@ const MessageItem = memo(({
                 <div className={`flex flex-col ${isUser ? 'items-start' : 'items-end'} w-full`}>
                     <div className={`${
                         isUser
-                            ? 'rounded-tr-2xl rounded-br-2xl rounded-bl-2xl rounded-tl-md'
-                            : 'rounded-tl-2xl rounded-bl-2xl rounded-br-2xl rounded-tr-md'
+                            ? 'rounded-tr-2xl rounded-br-2xl rounded-bl-2xl rounded-tl-sm'
+                            : 'rounded-tl-2xl rounded-bl-2xl rounded-br-2xl rounded-tr-sm'
                     } px-4 py-3 shadow-sm ${
                         isUser
                             ? 'bg-[#0b0b0b] text-slate-200 border border-white/5'

@@ -40,7 +40,7 @@ const MessageList = memo(({
         <div
             ref={chatContainerRef}
             onScroll={handleScroll}
-            className="flex-1 overflow-y-auto p-6 h-full space-y-4  scroll-smooth thin-dark-scrollbar"
+            className="flex-1 overflow-y-auto px-3 py-6 h-full space-y-4  scroll-smooth thin-dark-scrollbar"
             style={{ maxHeight: 'calc(100vh - 150px)' }}
         >
             {messages.map((msg, idx) => (

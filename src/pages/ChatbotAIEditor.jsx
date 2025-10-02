@@ -744,7 +744,7 @@ const ChatbotAIEditor = memo(() => {
             </div>
         </div>
         <Dialog open={showPublishModal} onOpenChange={(o) => setShowPublishModal(o)}>
-          <DialogContent className="bg-[#1a1a1a] border-[#2a2a2a]">
+          <DialogContent className="bg-[#1a1a1a] border-[#2a2a2a]  max-w-md text-slate-200">
             <DialogHeader>
               <DialogTitle className="text-slate-200 text-base">Share link</DialogTitle>
             </DialogHeader>
