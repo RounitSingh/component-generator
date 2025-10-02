@@ -677,23 +677,25 @@ const ChatbotAIEditor = memo(() => {
                                 <button
                                   onClick={handlePublish}
                                   disabled={publishing}
-                                  className="px-3 py-1.5 text-sm rounded bg-blue-400 text-white disabled:opacity-50"
+                                  className="px-3 py-1.5 text-sm rounded bg-blue-500 text-white disabled:opacity-50 cursor-pointer"
                                   title="Publish read-only share link"
-                                >{publishing ? 'Publishing...' : 'Publish'}</button>
+                                >
+                                  {publishing ? 'Publishing...' : 'Publish'}
+                                </button>
                                 <DownloadButton />
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-gray-400">Edit </span>
                                     <button
-  onClick={() => setEditMode(!editMode)}
-  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shadow-sm 
-    ${editMode ? 'bg-cyan-500/80' : 'bg-gray-600/60'}`}
-  title={editMode ? 'Disable edit mode' : 'Enable edit mode'}
->
-  <span
-    className={`inline-block h-3 w-3 transform rounded-full bg-gray-100 transition-transform 
-      ${editMode ? 'translate-x-5' : 'translate-x-1'}`}
-  />
-</button>
+                                            onClick={() => setEditMode(!editMode)}
+                                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shadow-sm 
+                                                ${editMode ? 'bg-cyan-500/80' : 'bg-gray-600/60'}`}
+                                            title={editMode ? 'Disable edit mode' : 'Enable edit mode'}
+                                            >
+                                            <span
+                                                className={`inline-block h-3 w-3 transform rounded-full bg-gray-100 transition-transform 
+                                                ${editMode ? 'translate-x-5' : 'translate-x-1'}`}
+                                            />
+                                    </button>
 
                                 </div>
                                 {selectedElement && (
@@ -758,7 +760,7 @@ const ChatbotAIEditor = memo(() => {
                   value={shareInfo?.linkUrl || ''}
                   className="flex-1 px-3 py-2.5 rounded-l-md bg-[#111111] border border-[#2a2a2a] text-slate-200 text-sm select-all"
                 />
-                <CopyButton className="rounded-r-md rounded-l-none " text={shareInfo?.linkUrl || ''} size="md" disabled={!shareInfo?.linkUrl} />
+                <CopyButton className="rounded-r-md rounded-l-none  " text={shareInfo?.linkUrl || ''} size="lg" disabled={!shareInfo?.linkUrl} />
               </div>
             </div>
             <div>

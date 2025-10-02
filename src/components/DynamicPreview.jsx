@@ -325,7 +325,7 @@ const DynamicPreview = ({ jsx, css }) => {
           <LiveError className="text-red-600" />
           {preprocessError && <div className="text-red-500">{preprocessError}</div>}
                       {editMode && (
-              <div className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-medium z-10">
+              <div className="absolute  top-2 right-2 bg-blue-500 text-white px-2 py-1 rounded-lg shadow-emerald-400 text-xs font-medium z-100">
                 Edit Mode
               </div>
             )}

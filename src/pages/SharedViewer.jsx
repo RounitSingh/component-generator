@@ -57,9 +57,9 @@ const SharedViewer = () => {
           <a className="text-xs text-slate-400 underline" href="/" rel="noreferrer">Create your own</a>
         </div>*/}
         {jsx ? (
-          <div className="rounded-lg overflow-hidden bg-[#151515] border border-[#232323] min-h-[70vh]">
+          <div className=" overflow-hidden bg-[#151515] border border-[#232323] min-h-[70vh]">
             <Suspense fallback={<div className="p-6 text-slate-500">Loading preview…</div>}>
-              <div className="p-6">
+              <div className="">
                 <DynamicPreview jsx={jsx} css={css} />
               </div>
             </Suspense>

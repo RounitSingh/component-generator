@@ -15,7 +15,7 @@ const CopyButton = ({ text = '', disabled = false, size = 'sm', className = '' }
 		}
 	};
 
-	const sizeClasses = size === 'sm' ? 'px-2 py-1 text-xs' : size === 'md' ? 'px-3 py-1.5 text-sm' : 'px-4 py-2 text-base';
+	const sizeClasses = size === 'sm' ? 'px-2 py-1 text-xs' : size === 'md' ? 'px-3 py-1.5 text-sm' : 'px-3 py-2 text-base';
 
 	return (
 		<button
@@ -26,7 +26,9 @@ const CopyButton = ({ text = '', disabled = false, size = 'sm', className = '' }
 			title={copied ? 'Copied!' : 'Copy to clipboard'}
 		>
 			{copied ? <Check size={14} className="text-slate-200" /> : <Copy size={14} />}
-			<span>{copied ? 'Copied' : 'Copy'}</span>
+			<span className="inline-block min-w-[3.2rem] text-left">
+				{copied ? 'Copied' : 'Copy'}
+			</span>
 		</button>
 	);
 };
