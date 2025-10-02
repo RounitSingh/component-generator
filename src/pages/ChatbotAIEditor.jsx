@@ -20,6 +20,10 @@ import {
     listMessagesByConversation,
     createMessage,
     updateConversation,
+    getConversationDetails,
+    publishComponent as publishComponentApi,
+    listComponentsByConversation as listComponentsByConversationApi,
+    createComponent as createComponentApi,
 } from '../utils/api';
 import useAuthStore from '../store/authStore';
 import {
@@ -31,7 +35,8 @@ import {
     useComponentCount,
     useProcessedMessages
 } from '../utils/chatbotUtils';
-
+import CopyButton from '../components/CopyButton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 
 
 const ChatbotAIEditor = memo(() => {
@@ -400,7 +405,7 @@ const ChatbotAIEditor = memo(() => {
             setUserPrompt('');
             setImage(null);
         }
-    }, [userPrompt, image, editMode, selectedElement, validateSelectedElement, conversationId, addMessage, code, messages, isElementSelectionValid, addComponent, createAbortController, promptText, components, setCurrentComponent, updateComponent, setDownloadCode]);
+    }, [userPrompt, image, editMode, selectedElement, createAbortController, conversationId, validateSelectedElement, addMessage, messages.length, code.jsx, code.css, isElementSelectionValid, promptText, setDownloadCode, upsertConversation, components, updateComponent, setCurrentComponent, addComponent]);
 
     const handleKeyDown = useCallback((e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -441,6 +446,62 @@ const ChatbotAIEditor = memo(() => {
         }
     }, [setEditMode, clearSelectedElement, clearMessages, clearComponents, clearCode, navigate]);
 
+    const [publishing, setPublishing] = useState(false);
+    const [shareInfo, setShareInfo] = useState(null);
+    const [showPublishModal, setShowPublishModal] = useState(false);
+    const handlePublish = useCallback(async () => {
+        if (!conversationId) return;
+        try {
+            setPublishing(true);
+            setShareInfo(null);
+            // 1) Try details endpoint
+            const details = await getConversationDetails(conversationId, { messagesLimit: 200 });
+            const comps = details?.components || details?.data?.components || [];
+            let latest = comps[0];
+            let componentId = latest?.id;
+
+            // 2) Fallback: list components by conversation
+            if (!componentId) {
+                const listed = await listComponentsByConversationApi(conversationId);
+                const items = Array.isArray(listed?.items) ? listed.items : (Array.isArray(listed) ? listed : []);
+                latest = items[0] || latest;
+                componentId = latest?.id;
+            }
+
+            // 3) Fallback: persist current code to create a component
+            if (!componentId && (code?.jsx || code?.css)) {
+                const created = await createComponentApi(conversationId, {
+                    type: 'jsx',
+                    data: { jsx: code.jsx || '', css: code.css || '' },
+                });
+                componentId = created?.id;
+            }
+
+            if (!componentId) {
+                alert('No component to publish');
+                return;
+            }
+
+            const res = await publishComponentApi({ componentId });
+            const link = res?.link || res?.data?.link;
+            const slug = link?.slug;
+            if (!slug) {
+                alert('Failed to create link');
+                return;
+            }
+            const linkUrl = `${window.location.origin}/share/${slug}`;
+            setShareInfo({ linkUrl, slug, id: link?.id });
+            setShowPublishModal(true);
+            try { await navigator.clipboard.writeText(linkUrl); } catch {
+                console.error('Failed to copy link to clipboard');
+            }
+        } catch (e) {
+            alert(e?.message || 'Failed to publish');
+        } finally {
+            setPublishing(false);
+        }
+    }, [conversationId, code]);
+
     // Download handled by Zustand store
 
     if (initializing || !isDataReady) {
@@ -457,6 +518,7 @@ const ChatbotAIEditor = memo(() => {
     }
 
     return (
+        <>
         <div className="min-h-screen  font-inter ">
             <div className=" mx-auto  h-screen">
                 <ResizablePanelGroup direction="horizontal" className="h-full">
@@ -611,6 +673,13 @@ const ChatbotAIEditor = memo(() => {
                             </div>
 
                             <div className="flex items-center gap-3">
+                               
+                                <button
+                                  onClick={handlePublish}
+                                  disabled={publishing}
+                                  className="px-3 py-1.5 text-sm rounded bg-blue-400 text-white disabled:opacity-50"
+                                  title="Publish read-only share link"
+                                >{publishing ? 'Publishing...' : 'Publish'}</button>
                                 <DownloadButton />
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm text-gray-400">Edit </span>
@@ -637,6 +706,8 @@ const ChatbotAIEditor = memo(() => {
                                     </button>
                                 )}
                             </div>
+                          
+                            
                         </div>
 
                         <div className="flex-1 overflow-hidden">
@@ -670,11 +741,40 @@ const ChatbotAIEditor = memo(() => {
                 </ResizablePanelGroup>
             </div>
         </div>
+        <Dialog open={showPublishModal} onOpenChange={(o) => setShowPublishModal(o)}>
+          <DialogContent className="bg-[#1a1a1a] border-[#2a2a2a]">
+            <DialogHeader>
+              <DialogTitle className="text-slate-200 text-base">Share link</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <label className="block text-xs text-slate-400">Public URL</label>
+              {!shareInfo?.linkUrl ? (
+                <div className="text-xs text-slate-400">Generating link…</div>
+              ) : null}
+              <div className="flex items-center ">
+                <input
+                  type="text"   
+                  readOnly
+                  value={shareInfo?.linkUrl || ''}
+                  className="flex-1 px-3 py-2.5 rounded-l-md bg-[#111111] border border-[#2a2a2a] text-slate-200 text-sm select-all"
+                />
+                <CopyButton className="rounded-r-md rounded-l-none " text={shareInfo?.linkUrl || ''} size="md" disabled={!shareInfo?.linkUrl} />
+              </div>
+            </div>
+            <div>
+              <button
+                onClick={() => window.open(shareInfo?.linkUrl || '', '_blank', 'noopener,noreferrer')}
+                disabled={!shareInfo?.linkUrl}
+                className="w-auto px-4 py-2 rounded-md bg-blue-500 text-white text-sm hover:bg-blue-600 disabled:opacity-50"
+              >Open</button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        </>
     );
 });
 
 ChatbotAIEditor.displayName = 'ChatbotAIEditor';
 
 export default ChatbotAIEditor;
-
 

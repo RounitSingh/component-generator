@@ -25,7 +25,7 @@ const CopyButton = ({ text = '', disabled = false, size = 'sm', className = '' }
 			className={`inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-transparent text-slate-200 hover:bg-white/5 active:bg-white/10 transition-colors ${sizeClasses} disabled:opacity-50 ${className}`}
 			title={copied ? 'Copied!' : 'Copy to clipboard'}
 		>
-			{copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+			{copied ? <Check size={14} className="text-slate-200" /> : <Copy size={14} />}
 			<span>{copied ? 'Copied' : 'Copy'}</span>
 		</button>
 	);

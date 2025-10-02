@@ -8,6 +8,7 @@ import Navbar from './components/Navbar';
 import LayoutWithSidebar from './components/LayoutWithSidebar';
 import TailwindTest from './components/TailwindTest';
 import ReactLiveCheck from './pages/ReactLiveCheck';
+import SharedViewer from './pages/SharedViewer';
 import ProtectedRoute from './components/ProtectedRoute';
 import useAuthStore from './store/authStore';
 import { getProfile } from './utils/api';
@@ -56,6 +57,7 @@ const App = () => {
             <Route path="/chat" element={<LayoutWithSidebar><ChatbotAIEditor /></LayoutWithSidebar>} />
             <Route path="/chat/:id" element={<LayoutWithSidebar><ChatbotAIEditor /></LayoutWithSidebar>} />
            </Route>
+          <Route path="/share/:slug" element={<SharedViewer />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

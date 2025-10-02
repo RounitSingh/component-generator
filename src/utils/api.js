@@ -765,3 +765,31 @@ export const saveAIResponse = async (_sessionId, responseData) => {
 };
 
 export default api;
+
+// --- Share/Publish APIs ---
+export const publishComponent = async ({ componentId, expiresAt }) => {
+  try {
+    const res = await api.post('/api/share/publish', { componentId, expiresAt });
+    return handleApiResponse(res);
+  } catch (error) {
+    handleApiError(error);
+  }
+};
+
+export const revokeShareLink = async (linkId) => {
+  try {
+    const res = await api.post(`/api/share/${linkId}/revoke`);
+    return handleApiResponse(res);
+  } catch (error) {
+    handleApiError(error);
+  }
+};
+
+export const getPublicSharedComponent = async (slug) => {
+  try {
+    const res = await api.get(`/api/public/share/${slug}`);
+    return handleApiResponse(res);
+  } catch (error) {
+    handleApiError(error);
+  }
+};
