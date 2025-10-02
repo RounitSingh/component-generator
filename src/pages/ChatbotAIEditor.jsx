@@ -2,12 +2,14 @@
 
 import React, { useRef, useState, useEffect, useCallback, memo, lazy, Suspense } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Send, Image as ImageIcon, Loader2, StarsIcon, X, Plus, Menu, EllipsisVertical } from 'lucide-react';
+import { Send, Image as ImageIcon, Loader2, StarsIcon, X, Plus, Menu, EllipsisVertical, Eye, Code } from 'lucide-react';
 import DownloadButton from '../components/DownloadButton';
 import useDownloadStore from '../store/downloadStore';
 import useChatbotChatStore from '../store/chatbotChatStore';
 import useChatListStore from '../store/chatListStore';
 import useChatbotComponentStore from '../store/chatbotComponentStore';
+import useMobileViewStore from '../store/mobileViewStore';
+import { useIsMobile } from '../hooks/use-mobile';
 import { generateComponentWithGemini } from '../utils/geminiApi';
 // Lazy-load heavy subcomponents to reduce initial render cost
 const DynamicPreview = lazy(() => import('../components/DynamicPreview'));
@@ -65,6 +67,10 @@ const ChatbotAIEditor = memo(() => {
         validateSelectedElement,
         components,
     } = useChatbotComponentStore();
+
+    // Mobile view state
+    const isMobile = useIsMobile();
+    const { currentView } = useMobileViewStore();
 
     // Race condition protection
     const { createAbortController } = useAbortController();
@@ -426,6 +432,7 @@ const ChatbotAIEditor = memo(() => {
         }
     }, []);
 
+    // eslint-disable-next-line no-unused-vars
     const handleNewChat = useCallback(async () => {
         try {
             setShowScrollButton(false);
@@ -519,53 +526,56 @@ const ChatbotAIEditor = memo(() => {
 
     return (
         <>
-        <div className="min-h-screen  font-inter ">
-            <div className=" mx-auto  h-screen">
+        <div className={`${isMobile ? 'h-full' : 'min-h-screen'} font-inter`}>
+            <div className={`mx-auto ${isMobile ? 'h-full' : 'h-screen'}`}>
                 <ResizablePanelGroup direction="horizontal" className="h-full">
-                    <ResizablePanel defaultSize={35}  className="bg-[#1B1B1B] rounded-l-sm shadow-xl flex flex-col item-center justify-between overflow-hidden">
-                        {/* Header */}
-                       <div className="flex  justify-end items-center p-3 shadow-md ">
-                            <div className="flex  w-full items-center justify-between gap-2">
-                                <button
+                    <ResizablePanel 
+                        defaultSize={isMobile ? 100 : 35}  
+                        className={`bg-[#1B1B1B] ${isMobile ? 'rounded-sm' : 'rounded-l-sm'} shadow-xl flex flex-col ${
+                            isMobile ? (currentView === 'chat' ? 'block' : 'hidden') : 'block'
+                        } ${isMobile ? 'h-full' : 'overflow-hidden'}`}
+                    >
+                        {/* Header - Fixed height */}
+                       <div className={`flex-shrink-0 flex justify-end items-center ${isMobile ? 'px-2 py-2' : 'px-3 py-4'} shadow-md `}>
+                            <div className={`flex w-full items-center justify-between ${isMobile ? 'gap-1.5' : 'gap-2'}`}>
+                               {/**<button
                                     onClick={handleNewChat}
-                                    className="flex text-semibold items-center gap-1 hover:bg-[#2d2d2e] cursor-pointer  text-gray-300 hover:text-gray-200  px-2 py-1.5 rounded-lg transition-colors text-sm"
+                                    className={`flex text-semibold items-center ${isMobile ? 'gap-0.5' : 'gap-1'} hover:bg-[#2d2d2e] cursor-pointer text-gray-300 hover:text-gray-200 ${isMobile ? 'px-1.5 py-1' : 'px-2 py-1.5'} rounded-lg transition-colors ${isMobile ? 'text-xs' : 'text-sm'}`}
                                     title="New Chat"
                                 >
-                                    <Plus className="w-4 h-4" />
-                                    New 
-                                </button>
-                                <div className="flex items-center gap-2">
-  {code.jsx && code.css && (
-    <div className="bg-[#2d2d2e] text-gray-300 rounded-md px-2 py-0.5 text-xs font-medium flex items-center">
-      v{componentCount}
-    </div>
-  )}
-  <EllipsisVertical className="h-5 w-5 text-gray-300 cursor-pointer " />
-</div>
-
-
-                               
-                               
+                                    <Plus className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />
+                                    {isMobile ? 'New' : 'New'}
+                                </button>*/}
+                                <div className={`flex w-full items-center justify-between ${isMobile ? 'gap-1.5' : 'gap-2'}`}>
+                                {code.jsx && code.css && (
+                                    <div className={`bg-[#2d2d2e] text-gray-300 rounded-md ${isMobile ? 'px-1.5 py-0.5 text-xs' : 'px-2 py-0.5 text-xs'} font-medium flex items-center`}>
+                                    v{componentCount}
+                                    </div>
+                                )}
+                                <EllipsisVertical className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-gray-300 cursor-pointer`} />
+                                </div>
                             </div>
                         </div>
 
-                        {/* Messages */}
-                        <Suspense fallback={<div className="p-6  text-slate-400">Loading messages...</div>}>
-                            <MessageList
-                                messages={processedMessages}
-                                loading={loading}
-                                error={error}
-                                editModeError={editModeError}
-                                showScrollButton={showScrollButton}
-                                onRestoreFromMessage={handleRestoreFromMessage}
-                                code={code}
-                                editMode={editMode}
-                                selectedElement={selectedElement}
-                            />
-                        </Suspense>
+                        {/* Messages - Flexible height with scroll */}
+                        <div className={`flex-1 min-h-0 ${isMobile ? 'overflow-hidden' : 'overflow-hidden'}`}>
+                            <Suspense fallback={<div className="p-6  text-slate-400">Loading messages...</div>}>
+                                <MessageList
+                                    messages={processedMessages}
+                                    loading={loading}
+                                    error={error}
+                                    editModeError={editModeError}
+                                    showScrollButton={showScrollButton}
+                                    onRestoreFromMessage={handleRestoreFromMessage}
+                                    code={code}
+                                    editMode={editMode}
+                                    selectedElement={selectedElement}
+                                />
+                            </Suspense>
+                        </div>
 
-                        {/* Input Area */}
-                        <div className="px-6 pb-6 pt-4  backdrop-blur-sm ">
+                        {/* Input Area - Fixed height */}
+                        <div className={`flex-shrink-0 px-4 pb-4 pt-3 backdrop-blur-sm ${isMobile ? 'bg-[#1B1B1B]/95' : ''}`}>
                             {selectedElement && isElementSelectionValid ? (
                                 <div className="mb-3 px-3 py-1.5 bg-[#334155] border border-[#475569] rounded-lg">
                                     <div className="flex items-center justify-between">
@@ -647,53 +657,58 @@ const ChatbotAIEditor = memo(() => {
                             </div>
                         </div>
                     </ResizablePanel>
-                    <ResizableHandle withHandle className="bg-[#2A2A2A] after:bg-[#2A2A2A]" />
+                    {!isMobile && <ResizableHandle withHandle className="bg-[#2A2A2A] after:bg-[#2A2A2A]" />}
                     {/* Preview/Code Panel */}
-                    <ResizablePanel defaultSize={65}  className="bg-[#222222] rounded-r-sm shadow-xl flex flex-col overflow-hidden">
-                        <div className="flex justify-between items-center px-4 py-2 shadow-xl">
-                            <div className="flex bg-[#0F0F0F] rounded-lg p-1 shadow-lg">
-                                <button
-                                    className={`px-3 py-1.5 text-sm rounded  transition-all ease-in-out ${activeTab === 'preview'
-                                        ? 'bg-[#323333] text-[#FFFFFF] shadow-md'
-                                        : 'text-gray-300 '
-                                        }`}
-                                    onClick={() => setActiveTab('preview')}
-                                >
-                                    Preview
-                                </button>
-                                <button
-                                    className={`px-3 py-1.5 text-sm rounded transition-all ease-in-out ${activeTab === 'code'
-                                        ? 'bg-[#37383a] text-[#FFFFFF] shadow-md'
-                                        : 'text-gray-300'
-                                        }`}
-                                    onClick={() => setActiveTab('code')}
-                                >
-                                    Code
-                                </button>
-                            </div>
+                    <ResizablePanel 
+                        defaultSize={isMobile ? 100 : 65}  
+                        className={`bg-[#222222] ${isMobile ? 'rounded-sm' : 'rounded-r-sm'} shadow-xl flex flex-col ${
+                            isMobile ? (currentView === 'preview' ? 'block' : 'hidden') : 'block'
+                        } ${isMobile ? 'h-full overflow-hidden' : 'overflow-hidden'}`}
+                    >
+                        <div className={`flex justify-between items-center ${isMobile ? 'px-2 py-1.5' : 'px-4 py-2'} shadow-xl`}>
+                            <div className={`flex bg-[#0F0F0F] rounded-lg ${isMobile ? 'p-1' : 'p-1'} shadow-lg`}>
+                                    <button
+                                        className={`${isMobile ? 'px-2 py-1' : 'px-3 py-1.5'} ${isMobile ? 'text-xs' : 'text-xs'} rounded transition-all ease-in-out ${activeTab === 'preview'
+                                            ? 'bg-[#323333] text-[#FFFFFF] shadow-md'
+                                            : 'text-gray-300 '
+                                            }`}
+                                        onClick={() => setActiveTab('preview')}
+                                    >
+                                        {isMobile ? <Eye className="w-3 h-3" /> : 'Preview'}
+                                    </button>
+                                    <button
+                                        className={`${isMobile ? 'px-2 py-1' : 'px-3 py-1.5'} ${isMobile ? 'text-xs' : 'text-xs'} rounded transition-all ease-in-out ${activeTab === 'code'
+                                            ? 'bg-[#37383a] text-[#FFFFFF] shadow-md'
+                                            : 'text-gray-300'
+                                            }`}
+                                        onClick={() => setActiveTab('code')}
+                                    >
+                                        {isMobile ? <Code className="w-3 h-3" /> : 'Code'}
+                                    </button>
+                          </div>
 
-                            <div className="flex items-center gap-3">
+                            <div className={`flex items-center ${isMobile ? 'gap-1.5' : 'gap-3'}`}>
                                
                                 <button
                                   onClick={handlePublish}
                                   disabled={publishing}
-                                  className="px-3 py-1.5 text-sm rounded bg-blue-500 text-white disabled:opacity-50 cursor-pointer"
+                                  className={`${isMobile ? 'px-2 py-1 text-xs' : 'px-3 py-1 text-sm'} rounded bg-blue-500 text-white disabled:opacity-50 cursor-pointer`}
                                   title="Publish read-only share link"
                                 >
-                                  {publishing ? 'Publishing...' : 'Publish'}
+                                  {publishing ?  'Publishing...' : 'Publish'}
                                 </button>
-                                <DownloadButton />
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm text-gray-400">Edit </span>
+                                <DownloadButton isMobile={isMobile} />
+                                <div className={`flex items-center ${isMobile ? 'gap-1' : 'gap-2'}`}>
+                                    {!isMobile && <span className="text-sm text-gray-400">Edit </span>}
                                     <button
                                             onClick={() => setEditMode(!editMode)}
-                                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors shadow-sm 
+                                            className={`relative inline-flex ${isMobile ? 'h-4 w-7' : 'h-5 w-9'} items-center rounded-full transition-colors shadow-sm 
                                                 ${editMode ? 'bg-cyan-500/80' : 'bg-gray-600/60'}`}
                                             title={editMode ? 'Disable edit mode' : 'Enable edit mode'}
                                             >
                                             <span
-                                                className={`inline-block h-3 w-3 transform rounded-full bg-gray-100 transition-transform 
-                                                ${editMode ? 'translate-x-5' : 'translate-x-1'}`}
+                                                className={`inline-block ${isMobile ? 'h-2.5 w-2.5' : 'h-3 w-3'} transform rounded-full bg-gray-100 transition-transform 
+                                                ${editMode ? (isMobile ? 'translate-x-3.5' : 'translate-x-5') : 'translate-x-1'}`}
                                             />
                                     </button>
 
@@ -701,10 +716,10 @@ const ChatbotAIEditor = memo(() => {
                                 {selectedElement && (
                                     <button
                                         onClick={clearSelectedElement}
-                                        className="text-gray-400 hover:text-red-400 hover:bg-red-900/20 p-1.5 rounded transition-colors shadow-sm"
+                                        className={`text-gray-400 hover:text-red-400 hover:bg-red-900/20 ${isMobile ? 'p-1' : 'p-1.5'} rounded transition-colors shadow-sm`}
                                         title="Clear selection"
                                     >
-                                        <X size={14} />
+                                        <X size={isMobile ? 12 : 14} />
                                     </button>
                                 )}
                             </div>
