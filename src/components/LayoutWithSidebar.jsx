@@ -21,17 +21,21 @@ export default function LayoutWithSidebar({ children }) {
   return (
     <SidebarProvider defaultOpen={false}>
       <AppSidebar />
-      <SidebarInset>
-      {isMobile && (
-          <SidebarHeader className="bg-[#2A2A2A] border-b border-b-neutral-700 ">
+    <SidebarInset className="flex w-full h-screen flex-col overflow-auto ">
+        {isMobile && (
+          <SidebarHeader className="bg-[#2A2A2A] border-b border-b-neutral-700">
             <div className="flex items-center justify-between text-white/60">
               <SidebarTrigger className="lg:hidden" />
             </div>
           </SidebarHeader>
         )}
-       
-        <div className="flex flex-1 flex-col ">{children}</div>
+
+      
+        <div className="flex-1 min-h-0 overflow-x-hidden">
+          {children}
+        </div>
       </SidebarInset>
+
     </SidebarProvider>
   )
 }
