@@ -4,6 +4,8 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ChatbotAIEditor from './pages/ChatbotAIEditor';
+import ChatHistory from './pages/ChatHistory';
+import Dashboard from './pages/Dashboard';
 import Navbar from './components/Navbar';
 import LayoutWithSidebar from './components/LayoutWithSidebar';
 import TailwindTest from './components/TailwindTest';
@@ -46,7 +48,7 @@ const App = () => {
   const showNavbar = isHomePage;
 
   return (
-    <div className={`min-h-screen ${isHomePage ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-black' : 'bg-slate-900'}`}>
+    <div className={`min-h-screen ${isHomePage ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-black' : 'bg-[#222222]'}`}>
       {showNavbar && <Navbar />}
       <div>
         <Routes>
@@ -54,8 +56,10 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<LayoutWithSidebar><Dashboard /></LayoutWithSidebar>} />
             <Route path="/chat" element={<LayoutWithSidebar><ChatbotAIEditor /></LayoutWithSidebar>} />
             <Route path="/chat/:id" element={<LayoutWithSidebar><ChatbotAIEditor /></LayoutWithSidebar>} />
+            <Route path="/chat-history" element={<LayoutWithSidebar><ChatHistory /></LayoutWithSidebar>} />
            </Route>
           <Route path="/share/:slug" element={<SharedViewer />} />
           <Route path="*" element={<Navigate to="/" replace />} />

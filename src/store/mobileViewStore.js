@@ -17,3 +17,8 @@ const useMobileViewStore = create((set) => ({
 }))
 
 export default useMobileViewStore
+
+
+
+
+

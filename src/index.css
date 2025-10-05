@@ -278,3 +278,12 @@ body::-webkit-scrollbar,
 .thin-dark-scrollbar::-webkit-scrollbar-thumb:active {
   background-color: #6B6B6B;
 }
+
+/* Hide scrollbar when sidebar is collapsed */
+.group-data-\[collapsible\=icon\] .thin-dark-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.group-data-\[collapsible\=icon\] .thin-dark-scrollbar::-webkit-scrollbar {
+  display: none !important;
+}

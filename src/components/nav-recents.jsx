@@ -62,7 +62,7 @@
 //   );
 // }
 import React from "react"
-import { Edit } from "lucide-react"
+import { Edit, EllipsisVertical, Archive, Trash2 } from "lucide-react"
 
 import {
   SidebarGroup,
@@ -83,6 +83,13 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 export function NavRecents({
   items = [],
   onSelect,
@@ -90,6 +97,8 @@ export function NavRecents({
   hasMore,
   loading,
   onRename,
+  onArchive,
+  onDelete,
 }) {
   const sentinelRef = React.useRef(null)
   const [renameModal, setRenameModal] = React.useState({
@@ -129,12 +138,24 @@ export function NavRecents({
     }
   }
 
+  const handleArchive = async (item) => {
+    try {
+      await onArchive?.(item.id)
+    } catch (e) {
+      console.error('Failed to archive conversation', e)
+    }
+  }
+
+  const handleDelete = (item) => {
+    onDelete?.(item.id)
+  }
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="text-xs text-white/60 font-medium uppercase tracking-wider mb-2">
         Recents
       </SidebarGroupLabel>
-      <div className="overflow-y-auto max-h-[50vh] pr-1 thin-dark-scrollbar">
+      <div className="overflow-y-auto max-h-[50vh] pr-1 thin-dark-scrollbar group-data-[collapsible=icon]:hidden">
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.id} className="group/menu-item">
@@ -149,16 +170,52 @@ export function NavRecents({
                 </button>
               </SidebarMenuButton>
               <SidebarMenuAction className="text-neutral-500 hover:text-neutral-300 opacity-0 group-hover/menu-item:opacity-100 transition-opacity">
-                <button
-                  className="text-xs text-white/80 hover:text-white"
-                  title="Rename"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleRenameClick(item)
-                  }}
-                >
-                  <Edit size={12} />
-                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="text-xs text-white/80 hover:text-white"
+                      title="More options"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <EllipsisVertical size={12} />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent 
+                    className="bg-neutral-800 border-neutral-700 text-white min-w-[160px]"
+                    align="end"
+                  >
+                    <DropdownMenuItem
+                      className="text-white hover:bg-neutral-700 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleRenameClick(item)
+                      }}
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Rename
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-white hover:bg-neutral-700 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleArchive(item)
+                      }}
+                    >
+                      <Archive className="mr-2 h-4 w-4" />
+                      Archive
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-red-400 hover:bg-red-900/20 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDelete(item)
+                      }}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </SidebarMenuAction>
             </SidebarMenuItem>
           ))}

@@ -143,8 +143,8 @@ import {
   SidebarMenu,   
   SidebarMenuButton,   
   SidebarMenuItem,   
-  useSidebar, 
 } from "@/components/ui/sidebar";
+import { useSidebar } from "@/components/ui/sidebar-utils";
 
 import useAuthStore from "@/store/authStore";
 import useChatListStore from "@/store/chatListStore";

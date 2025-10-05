@@ -1,9 +1,6 @@
 import { create } from 'zustand';
 import { 
   listConversationsPage, 
-  createConversation as apiCreateConversation, 
-  updateConversation as apiUpdateConversation,
-  archiveConversation as apiArchiveConversation,
   unarchiveConversation as apiUnarchiveConversation,
   deleteConversation as apiDeleteConversation
 } from '@/utils/api';
@@ -14,7 +11,7 @@ const mergeUnique = (existing, incoming) => {
   return Array.from(map.values()).sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
 };
 
-const useChatListStore = create((set, get) => ({
+const useArchivedChatStore = create((set, get) => ({
   conversations: [],
   nextCursor: null,
   hasMore: true,
@@ -28,24 +25,22 @@ const useChatListStore = create((set, get) => ({
     if (loading || !hasMore) return;
     set({ loading: true, error: null });
     try {
-      const res = await listConversationsPage({ limit: opts.limit ?? 10, cursor: nextCursor, activeOnly: opts.activeOnly ?? true });
+      const res = await listConversationsPage({ 
+        limit: opts.limit ?? 10, 
+        cursor: nextCursor, 
+        activeOnly: false // Fetch archived conversations
+      });
       const items = res?.items || res?.data?.items || [];
       const cursor = res?.meta?.nextCursor || res?.nextCursor || null;
       set((state) => ({
-        conversations: mergeUnique(state.conversations, items),
+        conversations: mergeUnique(state.conversations, items.filter(item => !item.isActive)),
         nextCursor: cursor,
         hasMore: Boolean(cursor),
         loading: false,
       }));
     } catch (error) {
-      set({ error: error.message || 'Failed to load conversations', loading: false });
+      set({ error: error.message || 'Failed to load archived conversations', loading: false });
     }
-  },
-
-  createConversation: async (payload = {}) => {
-    const row = await apiCreateConversation(payload);
-    set((state) => ({ conversations: mergeUnique([{ ...row }], state.conversations) }));
-    return row;
   },
 
   // Insert or update a conversation row without calling the API
@@ -54,29 +49,17 @@ const useChatListStore = create((set, get) => ({
     set((state) => ({ conversations: mergeUnique([{ ...row }], state.conversations) }));
   },
 
-  renameConversation: async (conversationId, title) => {
-    const updated = await apiUpdateConversation(conversationId, { title });
-    set((state) => ({
-      conversations: mergeUnique(
-        state.conversations.map((c) => (c.id === conversationId ? { ...c, title: updated.title || title, updatedAt: updated.updatedAt || c.updatedAt } : c)),
-        []
-      ),
-    }));
-    return updated;
-  },
-
-  archiveConversation: async (conversationId) => {
-    const updated = await apiArchiveConversation(conversationId);
+  // Remove a conversation from the archived list without calling the API
+  removeConversation: (conversationId) => {
     set((state) => ({
       conversations: state.conversations.filter((c) => c.id !== conversationId),
     }));
-    return updated;
   },
 
   unarchiveConversation: async (conversationId) => {
     const updated = await apiUnarchiveConversation(conversationId);
     set((state) => ({
-      conversations: mergeUnique([{ ...updated }], state.conversations),
+      conversations: state.conversations.filter((c) => c.id !== conversationId),
     }));
     return updated;
   },
@@ -89,6 +72,6 @@ const useChatListStore = create((set, get) => ({
   },
 }));
 
-export default useChatListStore;
+export default useArchivedChatStore;
 
 

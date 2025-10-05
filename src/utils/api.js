@@ -703,6 +703,24 @@ export const updateConversation = async (conversationId, payload) => {
 
 export const archiveConversation = async (conversationId) => {
   try {
+    const res = await api.patch(`/api/conversations/${conversationId}/archive`);
+    return handleApiResponse(res);
+  } catch (error) {
+    handleApiError(error);
+  }
+};
+
+export const unarchiveConversation = async (conversationId) => {
+  try {
+    const res = await api.patch(`/api/conversations/${conversationId}/unarchive`);
+    return handleApiResponse(res);
+  } catch (error) {
+    handleApiError(error);
+  }
+};
+
+export const deleteConversation = async (conversationId) => {
+  try {
     const res = await api.delete(`/api/conversations/${conversationId}`);
     return handleApiResponse(res);
   } catch (error) {
