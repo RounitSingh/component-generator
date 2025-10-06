@@ -29,6 +29,8 @@ const useChatListStore = create((set, get) => ({
     set({ loading: true, error: null });
     try {
       const res = await listConversationsPage({ limit: opts.limit ?? 10, cursor: nextCursor, activeOnly: opts.activeOnly ?? true });
+      
+      console.log('📥 fetchNextPage response:', res);
       const items = res?.items || res?.data?.items || [];
       const cursor = res?.meta?.nextCursor || res?.nextCursor || null;
       set((state) => ({

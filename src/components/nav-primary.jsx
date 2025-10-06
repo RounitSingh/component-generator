@@ -1,4 +1,4 @@
-import { Plus, MessageSquare, Archive } from "lucide-react"
+import { Plus} from "lucide-react"
 import { Link } from "react-router-dom"
 import {
   SidebarGroup,
@@ -29,17 +29,17 @@ export function NavPrimary({ onNewChat, items, onToggleArchived, showArchived })
             <SidebarMenuButton 
               asChild={item.title !== "Archived"}
               isActive={item.isActive || (item.title === "Archived" && showArchived)}  
-              className="text-neutral-300 hover:bg-black mb-1 hover:text-white data-[active=true]:bg-black data-[active=true]:text-white transition-colors"
+              className="text-neutral-300 cursor-pointer hover:bg-black mb-1 hover:text-white data-[active=true]:bg-black data-[active=true]:text-white transition-colors"
               onClick={item.title === "Archived" ? onToggleArchived : undefined}
             >
               {item.title === "Archived" ? (
                 <>
-                  <Archive className="size-4" />
+                  <item.icon className="size-4" />
                   <span className="group-data-[collapsible=icon]/sidebar-wrapper:hidden">{item.title}</span>
                 </>
               ) : (
                 <Link to={item.url}>
-                  <MessageSquare className="size-4" />
+                  <item.icon  className="size-4" />
                   <span className="group-data-[collapsible=icon]/sidebar-wrapper:hidden">{item.title}</span>
                 </Link>
               )}

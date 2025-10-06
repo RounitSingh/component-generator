@@ -14,7 +14,7 @@ import {
   SquareTerminal,
   StarsIcon,
 } from "lucide-react"
-
+import { LayoutDashboard, MessageSquare, Archive } from "lucide-react"
 import { NavPrimary } from "@/components/nav-primary"
 import { NavRecents } from "@/components/nav-recents"
 import { NavArchived } from "@/components/nav-archived"
@@ -60,9 +60,9 @@ const data = {
     
   ],
   primary: [
-    {title: "Dashboard" ,url: "/dashboard", isActive: false },
-    { title: "Chats", url: "/chat-history", isActive: false },
-    { title: "Archived", isActive: false },
+  //  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, isActive: false },
+    { title: "Chats", url: "/chat-history", icon: MessageSquare, isActive: false },
+    { title: "Archived", icon: Archive, isActive: false },
   ],
   recents: [
     { id: "1", title: "Modern Dark UI Design Styling", url: "#" },
@@ -250,7 +250,10 @@ export function AppSidebar({
           />
         </div>
       </SidebarContent>
-      <SidebarFooter className="border-t border-neutral-800">
+      <SidebarFooter 
+     
+         className="border-t border-neutral-800 p-0"
+      >
         <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />

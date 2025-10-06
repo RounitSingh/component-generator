@@ -208,9 +208,9 @@ console.log('User in NavUser:', user);
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="hover:bg-neutral-800/50 text-neutral-200 data-[state=open]:bg-neutral-800 data-[state=open]:text-white transition-colors"
+              className="hover:bg-neutral-800/50 text-neutral-200 data-[state=open]:bg-neutral-800 data-[state=open]:text-white transition-colors group-data-[collapsible=icon]/sidebar-wrapper:justify-center"
             >
-              <Avatar className="h-8 w-8 rounded-full ">
+              <Avatar className="h-8 w-8 rounded-lg ">
                 {/* <AvatarImage src={user.avatar || "" } alt={user.name || "User"} /> */}
                 <AvatarFallback
                   className={`rounded-full text-white font-semibold ${avatarColor}`}
