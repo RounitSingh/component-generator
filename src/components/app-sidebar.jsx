@@ -114,9 +114,9 @@ export function AppSidebar({
     resetChatList();
     resetArchivedChatList();
     
-    // Fetch initial page for the current user
-    fetchNextPage({ limit: 10 });
-    fetchArchivedNextPage({ limit: 10 });
+    // Fetch initial page for the current user - load more items initially for better UX
+    fetchNextPage({ limit: 30 });
+    fetchArchivedNextPage({ limit: 30 });
   }, [user?.id, resetChatList, resetChatSession, resetArchivedChatList, fetchNextPage, fetchArchivedNextPage]);
 
   const handleSelectRecent = React.useCallback((item) => {
@@ -235,7 +235,7 @@ export function AppSidebar({
           <NavRecents
             items={conversations}
             onSelect={handleSelectRecent}
-            onLoadMore={() => fetchNextPage({ limit: 10 })}
+            onLoadMore={() => fetchNextPage({ limit: 20 })}
             hasMore={hasMore}
             loading={loading}
             onRename={async (item, title) => {

@@ -1,68 +1,7 @@
-// import React from "react"
-// import { Edit, EllipsisVertical } from "lucide-react"
 
-// import {
-//   SidebarGroup,
-//   SidebarGroupLabel,
-//   SidebarMenu,
-//   SidebarMenuAction,
-//   SidebarMenuButton,
-//   SidebarMenuItem,
-// } from "@/components/ui/sidebar"
-
-// export function NavRecents({ items = [], onSelect, onLoadMore, hasMore, loading, onRename }) {
-//   const sentinelRef = React.useRef(null);
-//   React.useEffect(() => {
-//     if (!hasMore || loading) return;
-//     const el = sentinelRef.current;
-//     if (!el) return;
-//     const io = new IntersectionObserver((entries) => {
-//       entries.forEach((entry) => {
-//         if (entry.isIntersecting) {
-//           onLoadMore?.();
-//         }
-//       });
-//     }, { root: el.parentElement, rootMargin: '100px', threshold: 0 });
-//     io.observe(el);
-//     return () => io.disconnect();
-//   }, [hasMore, loading, onLoadMore]);
-//   return (
-//     <SidebarGroup>
-//       <SidebarGroupLabel className="text-xs text-white/60 font-medium uppercase tracking-wider mb-2">Recents</SidebarGroupLabel>
-//       <div className="overflow-y-auto max-h-[50vh] pr-1 thin-dark-scrollbar">
-//         <SidebarMenu>
-//           {items.map((item) => (
-//             <SidebarMenuItem key={item.id} className="group/menu-item">
-//               <SidebarMenuButton asChild  className="text-neutral-300 hover:bg-black hover:text-white data-[active=true]:bg-black data-[active=true]:text-white transition-colors text-sm rounded-md">
-//                 <button onClick={() => onSelect?.(item)}>
-//                   <span className="truncate group-data-[collapsible=icon]/sidebar-wrapper:hidden">{item.title || 'Untitled'}</span>
-//                 </button>
-//               </SidebarMenuButton>
-//               <SidebarMenuAction className="text-neutral-500 hover:text-neutral-300 opacity-0 group-hover/menu-item:opacity-100 transition-opacity">
-//                 <button
-//                   className="text-xs text-white/80 hover:text-white"
-//                   title="Rename"
-//                   onClick={(e) => {
-//                     e.stopPropagation();
-//                     const next = prompt('Rename chat', item.title || 'Untitled');
-//                     if (next && next.trim()) onRename?.(item, next.trim());
-//                   }}
-//                 >
-//                   <Edit size={12} />
-//                 </button>
-//               </SidebarMenuAction>
-//             </SidebarMenuItem>
-//           ))}
-//         </SidebarMenu>
-//         <div ref={sentinelRef} className="py-2 text-center text-xs text-neutral-500">
-//           {hasMore ? (loading ? 'Loading…' : 'Scroll to load more') : 'No more'}
-//         </div>
-//       </div>
-//     </SidebarGroup>
-//   );
-// }
 import React from "react"
 import { Edit, EllipsisVertical, Archive, Trash2 } from "lucide-react"
+import InfiniteScroll from "react-infinite-scroll-component"
 
 import {
   SidebarGroup,
@@ -100,30 +39,19 @@ export function NavRecents({
   onArchive,
   onDelete,
 }) {
-  const sentinelRef = React.useRef(null)
+  const scrollContainerRef = React.useRef(null)
   const [renameModal, setRenameModal] = React.useState({
     isOpen: false,
     item: null,
   })
   const [title, setTitle] = React.useState("")
 
-  React.useEffect(() => {
-    if (!hasMore || loading) return
-    const el = sentinelRef.current
-    if (!el) return
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            onLoadMore?.()
-          }
-        })
-      },
-      { root: el.parentElement, rootMargin: "100px", threshold: 0 }
-    )
-    io.observe(el)
-    return () => io.disconnect()
-  }, [hasMore, loading, onLoadMore])
+  // Memoize the load more callback to prevent unnecessary re-renders
+  const handleLoadMore = React.useCallback(() => {
+    if (!loading && hasMore) {
+      onLoadMore?.()
+    }
+  }, [onLoadMore, loading, hasMore])
 
   const handleRenameClick = (item) => {
     setRenameModal({ isOpen: true, item })
@@ -155,7 +83,31 @@ export function NavRecents({
       <SidebarGroupLabel className="text-xs text-white/60 font-medium uppercase tracking-wider mb-2">
         Recents
       </SidebarGroupLabel>
-      <div className="overflow-y-auto max-h-[50vh] pr-1 thin-dark-scrollbar group-data-[collapsible=icon]:hidden">
+      <div 
+        id="scrollableRecents"
+        ref={scrollContainerRef} 
+        style={{ height: '50vh', overflowY: 'auto' }}
+        className="pr-1 thin-dark-scrollbar group-data-[collapsible=icon]:hidden"
+      >
+        <InfiniteScroll
+          dataLength={items.length}
+          next={handleLoadMore}
+          hasMore={hasMore && !loading}
+          loader={
+            loading ? (
+              <div className="py-2 text-center text-xs text-neutral-500">
+                Loading…
+              </div>
+            ) : null
+          }
+          endMessage={
+            <div className="py-2 text-center text-xs text-neutral-500">
+              No more conversations
+            </div>
+          }
+          scrollableTarget="scrollableRecents"
+          scrollThreshold={0.8}
+        >
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.id} className="group/menu-item">
@@ -220,12 +172,7 @@ export function NavRecents({
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
-        <div
-          ref={sentinelRef}
-          className="py-2 text-center text-xs text-neutral-500"
-        >
-          {hasMore ? (loading ? "Loading…" : "Scroll to load more") : "No more"}
-        </div>
+        </InfiniteScroll>
       </div>
 
       {/* Rename Dialog */}

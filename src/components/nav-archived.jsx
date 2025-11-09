@@ -1,5 +1,6 @@
 import React from "react"
 import { EllipsisVertical, Archive, Trash2 } from "lucide-react"
+import InfiniteScroll from "react-infinite-scroll-component"
 
 import {
   SidebarGroup,
@@ -26,25 +27,12 @@ export function NavArchived({
   onUnarchive,
   onDelete,
 }) {
-  const sentinelRef = React.useRef(null)
-
-  React.useEffect(() => {
-    if (!hasMore || loading) return
-    const el = sentinelRef.current
-    if (!el) return
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            onLoadMore?.()
-          }
-        })
-      },
-      { root: el.parentElement, rootMargin: "100px", threshold: 0 }
-    )
-    io.observe(el)
-    return () => io.disconnect()
-  }, [hasMore, loading, onLoadMore])
+  // Memoize the load more callback
+  const handleLoadMore = React.useCallback(() => {
+    if (!loading && hasMore) {
+      onLoadMore?.()
+    }
+  }, [onLoadMore, loading, hasMore])
 
   const handleUnarchive = async (item) => {
     try {
@@ -63,7 +51,32 @@ export function NavArchived({
       <SidebarGroupLabel className="text-xs text-white/60 font-medium uppercase tracking-wider mb-2">
         Archived
       </SidebarGroupLabel>
-      <div className="overflow-y-auto max-h-[50vh] pr-1 thin-dark-scrollbar group-data-[collapsible=icon]:hidden">
+      <div 
+        id="scrollableArchived"
+        style={{ height: '20vh', overflowY: 'auto' }}
+        className="pr-1 thin-dark-scrollbar group-data-[collapsible=icon]:hidden"
+      >
+        <InfiniteScroll
+          dataLength={items.length}
+          next={handleLoadMore}
+          hasMore={hasMore && !loading}
+          loader={
+            loading ? (
+              <div className="py-2 text-center text-xs text-neutral-500">
+                Loading…
+              </div>
+            ) : null
+          }
+          endMessage={
+            items.length > 0 ? (
+              <div className="py-2 text-center text-xs text-neutral-500">
+                No more
+              </div>
+            ) : null
+          }
+          scrollableTarget="scrollableArchived"
+          scrollThreshold={0.8}
+        >
         <SidebarMenu>
           {items.length === 0 ? (
             <div className="px-2 py-4 text-center text-xs text-neutral-500">
@@ -124,12 +137,7 @@ export function NavArchived({
             ))
           )}
         </SidebarMenu>
-        <div
-          ref={sentinelRef}
-          className="py-2 text-center text-xs text-neutral-500"
-        >
-          {hasMore ? (loading ? "Loading…" : "Scroll to load more") : "No more"}
-        </div>
+        </InfiniteScroll>
       </div>
     </SidebarGroup>
   )

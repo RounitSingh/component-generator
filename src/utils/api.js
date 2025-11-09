@@ -463,7 +463,12 @@ api.interceptors.response.use(
 // Unified response/error helpers
 const handleApiResponse = (response) => {
   if (response.data && response.data.success !== undefined) {
-    return response.data.data ?? response.data;
+    // Preserve meta information for pagination
+    const data = response.data.data ?? response.data;
+    if (response.data.meta) {
+      return { ...data, meta: response.data.meta };
+    }
+    return data;
   }
   return response.data;
 };
@@ -725,6 +730,18 @@ export const deleteConversation = async (conversationId) => {
     return handleApiResponse(res);
   } catch (error) {
     handleApiError(error);
+  }
+};
+
+export const bulkDeleteConversations = async (conversationIds) => {
+  try {
+    const res = await api.delete('/api/conversations', {
+      data: { ids: conversationIds }
+    });
+    return handleApiResponse(res);
+  } catch (error) {
+    handleApiError(error);
+    throw error;
   }
 };
 
