@@ -29,7 +29,7 @@ import { cn } from "../lib/utils";
 const products = [
   {
     title: "Moonbeam",
-    link: "https://gomoonbeam.com",
+    link: "",
     thumbnail:
       "https://aceternity.com/images/products/thumbnails/new/moonbeam.png",
   },
@@ -198,7 +198,7 @@ const ProductCard = ({ product, translate }) => {
       key={product.title}
       className="group/product h-96 w-[30rem] relative shrink-0"
     >
-      <a href={product.link} className="block group-hover/product:shadow-2xl">
+      <a  className="block group-hover/product:shadow-2xl">
         <img
           src={product.thumbnail}
           height="600"
@@ -445,25 +445,22 @@ const SkeletonTwo = () => {
 
 const SkeletonThree = () => {
   return (
-    <a
-      href="https://www.youtube.com/watch?v=RPa3_AD1_Vs"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="relative flex gap-10 h-full group/image"
-    >
+    // <a
+    //   href="https://www.youtube.com/watch?v=RPa3_AD1_Vs"
+    //   target="_blank"
+    //   rel="noopener noreferrer"
+    //   className="relative flex gap-10 h-full group/image"
+    // >
       <div className="w-full mx-auto bg-transparent group h-full">
         <div className="flex flex-1 w-full h-full flex-col space-y-2 relative">
-          <IconBrandYoutubeFilled className="h-20 w-20 absolute z-10 inset-0 text-red-500 m-auto" />
-          <img
-            src="https://images.unsplash.com/photo-611162616475-46b635cb6868?w=800&auto=format&fit=crop"
-            alt="header"
-            width={800}
-            height={800}
-            className="h-full w-full aspect-square object-cover object-center rounded-sm blur-none group-hover/image:blur-md transition-all duration-200"
+           <img
+            src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExendqbWh5aGUxM2U1ZG4zZDU4enlsdnMxcGJmaGk0eHNnMXdnZ2w4OSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT9IgzoKnwFNmISR8I/giphy.gif"
+            alt="AI prompt to component demo"
+          className="h-full w-full aspect-square object-cover object-center rounded-sm blur-none group-hover/image:blur-md transition-all duration-200"
           />
         </div>
       </div>
-    </a>
+    // </a>
   );
 };
 
@@ -511,30 +508,30 @@ const FeatureDescription = ({ children }) => {
 const FeaturesSection = () => {
   const features = [
     {
-      title: "Track issues effectively",
+      title: "AI-Powered UI Generation",
       description:
-        "Track and manage your project issues with ease using our intuitive interface.",
+        "Turn prompts into polished UI components. GenStudio understands your intent and generates structured, reusable components",
       skeleton: <SkeletonOne />,
       className: "col-span-1 lg:col-span-4 border-b border-white/20 lg:border-r ",
     },
     {
-      title: "Capture pictures with AI",
+      title: "See What Prompts Can Build",
       description:
-        "Capture stunning photos effortlessly using our advanced AI technology.",
+        "Turn ideas into polished UI instantly and visualize real results before using them",
       skeleton: <SkeletonTwo />,
       className: "border-b col-span-1 lg:col-span-2  border-white/20",
     },
     {
-      title: "Watch our AI on YouTube",
+      title: "From Idea to Interface",
       description:
-        "Whether its you or Tyler Durden, you can get to know about our product on YouTube",
+        "Skip the code. Just write a prompt and let the app turn your idea into real UI components instantly.",
       skeleton: <SkeletonThree />,
       className: "col-span-1 lg:col-span-3 lg:border-r border-white/20 ",
     },
     {
       title: "Deploy in seconds",
       description:
-        "With our blazing fast, state of the art, cutting edge cloud services - you can deploy your model in seconds.",
+        "Publish your components instantly and generate a public link. Share it with anyone to preview and explore your UI in real time.",
       skeleton: <SkeletonFour />,
       className: "col-span-1 lg:col-span-3 border-b border-white/20 lg:border-none",
     },
@@ -610,49 +607,52 @@ const Feature = ({ title, description, icon, index }) => {
 const FeaturesSectionTwo = () => {
   const features = [
     {
-      title: "Built for developers",
+      title: "Prompt-to-Production",
       description:
-        "Built for engineers, developers, dreamers, thinkers and doers.",
+        "Describe the UI and we'll build a ready-to-use component you can preview, tweak, and download.",
       icon: <IconTerminal2 />,
     },
     {
-      title: "Ease of use",
+      title: "Instant Visual Preview",
       description:
-        "It's as easy as using an Apple, and as expensive as buying one.",
+        "Interact with components immediately and test layouts on desktop, tablet and mobile without leaving the editor.",
       icon: <IconEaseInOut />,
     },
     {
-      title: "Pricing like no other",
+      title: "Export-Ready Code",
       description:
-        "Our prices are best in the market. No cap, no lock, no credit card required.",
+        "Download framework-ready packages or copy snippets to hand off to engineering in seconds.",
       icon: <IconCurrencyDollar />,
     },
     {
-      title: "100% Uptime guarantee",
-      description: "We just cannot be taken down by anyone.",
+      title: "Point-and-Click Editing",
+      description:
+        "Select any element in the preview to adjust size, spacing and styles with changes reflected in the code instantly.",
+      icon: <IconAdjustmentsBolt />,
+    },
+    {
+      title: "Shareable Read-Only Links",
+      description:
+        "Publish a snapshot with one click — anyone with the link can view and comment without signing in.",
       icon: <IconCloud />,
     },
     {
-      title: "Multi-tenant Architecture",
-      description: "You can simply share passwords instead of buying new seats",
+      title: "Safe Iteration & History",
+      description:
+        "Automatic versioning with side-by-side diffs and easy rollbacks for confident experimentation.",
       icon: <IconRouteAltLeft />,
     },
     {
-      title: "24/7 Customer Support",
+      title: "Built-in QA & Accessibility",
       description:
-        "We are available a 100% of the time. Atleast our AI Agents are.",
+        "Responsive checks and basic accessibility guidance help you ship components that work for everyone.",
       icon: <IconHelp />,
     },
     {
-      title: "Money back guarantee",
+      title: "Reusable Templates & Library",
       description:
-        "If you donot like EveryAI, we will convince you to like us.",
+        "Save components to a personal library, tag them, and reuse them across projects to keep designs consistent.",
       icon: <IconHeart />,
-    },
-    {
-      title: "And everything else",
-      description: "I just ran out of copy ideas. Accept my sincere apologies",
-      icon: <IconAdjustmentsBolt />,
     },
   ];
 
