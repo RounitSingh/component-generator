@@ -1,459 +1,871 @@
-import React, { useEffect,  useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { 
-  Sparkles, 
-  Zap, 
-  Code, 
-  Palette, 
-  Layers, 
-  Download,
-  ArrowRight,
-  Star,
-  Users,
-  Rocket
-} from 'lucide-react';
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import createGlobe from "cobe";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+} from "framer-motion";
+import { IconBrandYoutubeFilled } from "@tabler/icons-react";
+import {
+  IconAdjustmentsBolt,
+  IconCloud,
+  IconCurrencyDollar,
+  IconEaseInOut,
+  IconHeart,
+  IconHelp,
+  IconRouteAltLeft,
+  IconTerminal2,
+  IconPlus,
+  IconClock,
+  IconArrowUp,
+} from "@tabler/icons-react";
+import { cn } from "../lib/utils";
 
-gsap.registerPlugin(ScrollTrigger);
+// ============================================
+// PRODUCT DATA
+// ============================================
+const products = [
+  {
+    title: "Moonbeam",
+    link: "",
+    thumbnail:
+      "https://aceternity.com/images/products/thumbnails/new/moonbeam.png",
+  },
+  {
+    title: "Cursor",
+    link: "https://cursor.so",
+    thumbnail:
+      "https://aceternity.com/images/products/thumbnails/new/cursor.png",
+  },
+  {
+    title: "Rogue",
+    link: "https://userogue.com",
+    thumbnail:
+      "https://aceternity.com/images/products/thumbnails/new/rogue.png",
+  },
+  {
+    title: "Editorially",
+    link: "https://editorially.org",
+    thumbnail:
+      "https://aceternity.com/images/products/thumbnails/new/editorially.png",
+  },
+  {
+    title: "Editrix AI",
+    link: "https://editrix.ai",
+    thumbnail:
+      "https://aceternity.com/images/products/thumbnails/new/editrix.png",
+  },
+  {
+    title: "Pixel Perfect",
+    link: "https://app.pixelperfect.quest",
+    thumbnail:
+      "https://aceternity.com/images/products/thumbnails/new/pixelperfect.png",
+  },
+  {
+    title: "Algochurn",
+    link: "https://algochurn.com",
+    thumbnail:
+      "https://aceternity.com/images/products/thumbnails/new/algochurn.png",
+  },
+  {
+    title: "Aceternity UI",
+    link: "https://ui.aceternity.com",
+    thumbnail:
+      "https://aceternity.com/images/products/thumbnails/new/aceternityui.png",
+  },
+  {
+    title: "Tailwind Master Kit",
+    link: "https://tailwindmasterkit.com",
+    thumbnail:
+      "https://aceternity.com/images/products/thumbnails/new/tailwindmasterkit.png",
+  },
+  {
+    title: "SmartBridge",
+    link: "https://smartbridgetech.com",
+    thumbnail:
+      "https://aceternity.com/images/products/thumbnails/new/smartbridge.png",
+  },
+  {
+    title: "Renderwork Studio",
+    link: "https://renderwork.studio",
+    thumbnail:
+      "https://aceternity.com/images/products/thumbnails/new/renderwork.png",
+  },
+  {
+    title: "Creme Digital",
+    link: "https://cremedigital.com",
+    thumbnail:
+      "https://aceternity.com/images/products/thumbnails/new/cremedigital.png",
+  },
+  {
+    title: "Golden Bells Academy",
+    link: "https://goldenbellsacademy.com",
+    thumbnail:
+      "https://aceternity.com/images/products/thumbnails/new/goldenbellsacademy.png",
+  },
+  {
+    title: "Invoker Labs",
+    link: "https://invoker.lol",
+    thumbnail:
+      "https://aceternity.com/images/products/thumbnails/new/invoker.png",
+  },
+  {
+    title: "E Free Invoice",
+    link: "https://efreeinvoice.com",
+    thumbnail:
+      "https://aceternity.com/images/products/thumbnails/new/efreeinvoice.png",
+  },
+];
 
-const Home = () => {
-  const heroRef = useRef(null);
-  const cardsRef = useRef(null);
-  const floatingElementsRef = useRef(null);
-  const navigate = useNavigate();
-  const [isLoggedIn,setIsLoggedIn]=useState(false);
+// ============================================
+// HERO PARALLAX SECTION
+// ============================================
+const HeroHeader = ({ onPromptSubmit }) => {
+  const [inputValue, setInputValue] = useState("");
 
-  // Determine auth state from localStorage (kept simple and synchronous)
-  useEffect(()=>{
-    const t =  Boolean(localStorage.getItem('accessToken'));
-    setIsLoggedIn(t);
-    console.log("isLoggedIn", t);
-  }, [])
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      // Fast, smooth hero animations
-      gsap.fromTo('.hero-title', 
-        { opacity: 0, y: 40, scale: 0.95 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'power2.out' }
-      );
-
-      gsap.fromTo('.hero-subtitle', 
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.5, delay: 0.1, ease: 'power2.out' }
-      );
-
-      gsap.fromTo('.hero-buttons', 
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.5, delay: 0.2, ease: 'power2.out' }
-      );
-
-      gsap.fromTo('.hero-badge', 
-        { opacity: 0, scale: 0.8 },
-        { opacity: 1, scale: 1, duration: 0.4, delay: 0.3, ease: 'back.out(1.7)' }
-      );
-
-      // Smooth floating elements
-      gsap.fromTo('.floating-icon', 
-        { opacity: 0, scale: 0, rotation: -90 },
-        { 
-          opacity: 1, 
-          scale: 1, 
-          rotation: 0, 
-          duration: 0.8, 
-          delay: 0.4,
-          ease: 'back.out(1.7)',
-          stagger: 0.08
-        }
-      );
-
-      // Smooth stats animation
-      gsap.fromTo('.stat-item', 
-        { opacity: 0, y: 20 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.4,
-          ease: 'power2.out',
-          stagger: 0.05,
-          scrollTrigger: {
-            trigger: '.stats-section',
-            start: 'top 90%',
-            toggleActions: 'play none none reverse'
-          }
-        }
-      );
-
-    }, heroRef);
-
-    return () => ctx.revert();
-  }, []);
-
-  // Clean card data
-  const cardData = [
-    {
-      icon: Sparkles,
-      title: "AI-Powered Generation",
-      description: "Describe your component in natural language and watch our advanced AI create beautiful, functional React code tailored to your exact specifications in seconds.",
-      gradient: "from-cyan-500 to-blue-500",
-      glowColor: "cyan"
-    },
-    {
-      icon: Zap,
-      title: "Instant Preview",
-      description: "See your components come to life in real-time with our interactive preview system. Adjust properties, styles, and functionality before exporting.",
-      gradient: "from-purple-500 to-pink-500",
-      glowColor: "purple"
-    },
-    {
-      icon: Download,
-      title: "Export Ready Code",
-      description: "Get clean, production-ready code with proper TypeScript types, accessibility features, and modern React best practices built-in.",
-      gradient: "from-emerald-500 to-teal-500",
-      glowColor: "emerald"
-    }
-  ];
-
-  // Framer Motion variants for clean animations
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.1
-      }
-    }
-  };
-
-  const cardVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 50,
-      scale: 0.9
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        type: "spring",
-        duration: 0.8,
-        bounce: 0.3
-      }
+  const handleSubmit = () => {
+    if (!inputValue.trim()) return;
+    if (onPromptSubmit) {
+      onPromptSubmit(inputValue);
     }
   };
 
-  const iconVariants = {
-    rest: { 
-      scale: 1, 
-      rotate: 0,
-      transition: { duration: 0.4 }
-    },
-    hover: { 
-      scale: 1.1, 
-      rotate: 5,
-      transition: { 
-        duration: 0.4,
-        type: "spring",
-        bounce: 0.5
-      }
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
     }
   };
 
   return (
-    <div ref={heroRef} className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-black relative overflow-hidden">
-      {/* Enhanced dark background with neon accents */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 via-transparent to-purple-900/10"></div>
-        <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2306b6d4' fill-opacity='0.08'%3E%3Ccircle cx='7' cy='7' r='1.5'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-        }}></div>
-        
-        {/* Animated gradient orbs */}
-        <div className="absolute top-0 left-1/3 w-96 h-96 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/3 w-80 h-80 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 left-0 w-72 h-72 bg-gradient-to-r from-emerald-500/15 to-teal-500/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }}></div>
-        
-        {/* Mesh gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/5 to-transparent"></div>
-      </div>
+    <div className="max-w-7xl relative mx-auto py-20 md:py-40 px-4 w-full left-0 top-0 flex items-center justify-center min-h-[60vh] z-50">
+      <div className="max-w-3xl w-full relative z-50">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="relative rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-2xl bg-black/70 border border-white/10 overflow-hidden"
+        >
+          <textarea
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="How can I help you today?"
+            className="w-full bg-transparent text-white placeholder-white/40 text-base md:text-lg px-6 py-5 resize-none focus:outline-none h-[100px] overflow-hidden"
+            style={{ scrollbarWidth: "none" }}
+          />
 
-      {/* Floating background elements */}
-      <div ref={floatingElementsRef} className="absolute inset-0 pointer-events-none">
-        <div className="floating-icon absolute top-20 left-[8%] text-cyan-400/20">
-          <Code size={50} className="animate-float drop-shadow-lg" style={{ animationDelay: '0s', filter: 'drop-shadow(0 0 20px rgba(6, 182, 212, 0.3))' }} />
-        </div>
-        <div className="floating-icon absolute top-32 right-[12%] text-purple-400/20">
-          <Palette size={40} className="animate-float drop-shadow-lg" style={{ animationDelay: '2s', filter: 'drop-shadow(0 0 20px rgba(147, 51, 234, 0.3))' }} />
-        </div>
-        <div className="floating-icon absolute bottom-32 left-[15%] text-emerald-400/20">
-          <Layers size={45} className="animate-float drop-shadow-lg" style={{ animationDelay: '4s', filter: 'drop-shadow(0 0 20px rgba(16, 185, 129, 0.3))' }} />
-        </div>
-        <div className="floating-icon absolute bottom-48 right-[8%] text-pink-400/20">
-          <Sparkles size={35} className="animate-float drop-shadow-lg" style={{ animationDelay: '1s', filter: 'drop-shadow(0 0 20px rgba(236, 72, 153, 0.3))' }} />
-        </div>
-        <div className="floating-icon absolute top-1/2 left-[5%] text-yellow-400/20">
-          <Zap size={38} className="animate-float drop-shadow-lg" style={{ animationDelay: '3s', filter: 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.3))' }} />
-        </div>
-        <div className="floating-icon absolute top-1/3 right-[5%] text-blue-400/20">
-          <Star size={32} className="animate-float drop-shadow-lg" style={{ animationDelay: '5s', filter: 'drop-shadow(0 0 20px rgba(59, 130, 246, 0.3))' }} />
-        </div>
-      </div>
+          <div className="px-4 py-3 flex items-center justify-between ">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="p-2 text-white/50 hover:text-white transition-colors rounded-lg hover:bg-white/10"
+              >
+                <IconPlus size={20} />
+              </button>
+              <button
+                type="button"
+                className="p-2 text-white/50 hover:text-white transition-colors rounded-full hover:bg-white/10"
+              >
+                <IconClock size={20} />
+              </button>
+            </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        {/* Enhanced Hero Section */}
-        <div className="pt-32 pb-24 text-center relative">
-          {/* Hero Badge with neon glow */}
-          <div className="hero-badge inline-flex items-center gap-3 px-6 py-3 rounded-full bg-gradient-to-r from-slate-800/80 to-slate-700/80 backdrop-blur-xl border border-cyan-500/20 text-sm font-medium text-gray-300 mb-12 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 animate-pulse"></div>
-            <Sparkles className="w-5 h-5 text-cyan-400 relative z-10" />
-            <span className="relative z-10">AI-Powered Component Generation</span>
-            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-ping relative z-10"></div>
-          </div>
-
-          <div className="hero-title mb-12">
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-black leading-tight tracking-tight">
-              <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent drop-shadow-2xl animate-pulse">
-                GenUI
-              </span>
-              <span className="text-white ml-6 drop-shadow-2xl">Studio</span>
-            </h1>
-            <div className="mt-6 text-lg md:text-xl bg-gradient-to-r from-gray-400 to-gray-300 bg-clip-text text-transparent font-bold tracking-widest uppercase">
-              The Future of UI Development
+            <div className="flex items-center gap-3">
+              
+              <button
+                type="button"
+                onClick={handleSubmit}
+                className="p-2.5 bg-blue-500 hover:bg-blue-500/90 text-white cursor-pointer rounded-full transition-colors shadow-lg shadow-blue-500/25"
+              >
+                <IconArrowUp size={20} />
+              </button>
             </div>
           </div>
-          
-          <div className="hero-subtitle mb-16 max-w-5xl mx-auto">
-            <p className="text-xl md:text-2xl lg:text-3xl text-gray-300 leading-relaxed font-light">
-              Transform ideas into beautiful components in 
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent font-bold"> seconds</span>. 
-              Describe, preview, and export production-ready React code with the power of AI.
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+const ProductCard = ({ product, translate }) => {
+  return (
+    <motion.div
+      style={{ x: translate }}
+      whileHover={{ y: -20 }}
+      key={product.title}
+      className="group/product h-96 w-[30rem] relative shrink-0"
+    >
+      <a  className="block group-hover/product:shadow-2xl">
+        <img
+          src={product.thumbnail}
+          height="600"
+          width="600"
+          className="object-cover object-left-top absolute h-full w-full inset-0 rounded-xl"
+          alt={product.title}
+        />
+      </a>
+      <div className="absolute inset-0 h-full w-full opacity-0 group-hover/product:opacity-80 bg-black pointer-events-none rounded-xl transition-opacity duration-300"></div>
+      <h2 className="absolute bottom-4 left-4 opacity-0 group-hover/product:opacity-100 text-white font-medium transition-opacity duration-300">
+        {product.title}
+      </h2>
+    </motion.div>
+  );
+};
+
+const HeroParallax = ({ onPromptSubmit }) => {
+  const firstRow = products.slice(0, 5);
+  const secondRow = products.slice(5, 10);
+  const thirdRow = products.slice(10, 15);
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end start"],
+  });
+
+  const springConfig = { stiffness: 300, damping: 30, bounce: 100 };
+
+  const translateX = useSpring(
+    useTransform(scrollYProgress, [0, 1], [0, 1000]),
+    springConfig
+  );
+  const translateXReverse = useSpring(
+    useTransform(scrollYProgress, [0, 1], [0, -1000]),
+    springConfig
+  );
+  const rotateX = useSpring(
+    useTransform(scrollYProgress, [0, 0.2], [15, 0]),
+    springConfig
+  );
+  const opacity = useSpring(
+    useTransform(scrollYProgress, [0, 0.2], [0.2, 1]),
+    springConfig
+  );
+  const rotateZ = useSpring(
+    useTransform(scrollYProgress, [0, 0.2], [20, 0]),
+    springConfig
+  );
+  const translateY = useSpring(
+    useTransform(scrollYProgress, [0, 0.2], [-400, 200]),
+    springConfig
+  );
+
+  return (
+    <div
+      ref={ref}
+      className="h-[200vh] py-20 overflow-hidden antialiased relative flex flex-col self-auto [perspective:1000px] [transform-style:preserve-3d] bg-black"
+    >
+      <HeroHeader onPromptSubmit={onPromptSubmit} />
+      <motion.div
+        style={{
+          rotateX,
+          rotateZ,
+          translateY,
+          opacity,
+        }}
+      >
+        <motion.div className="flex flex-row-reverse space-x-reverse space-x-20 mb-20">
+          {firstRow.map((product) => (
+            <ProductCard
+              product={product}
+              translate={translateX}
+              key={product.title}
+            />
+          ))}
+        </motion.div>
+        <motion.div className="flex flex-row mb-20 space-x-20">
+          {secondRow.map((product) => (
+            <ProductCard
+              product={product}
+              translate={translateXReverse}
+              key={product.title}
+            />
+          ))}
+        </motion.div>
+        <motion.div className="flex flex-row-reverse space-x-reverse space-x-20">
+          {thirdRow.map((product) => (
+            <ProductCard
+              product={product}
+              translate={translateX}
+              key={product.title}
+            />
+          ))}
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+};
+
+// ============================================
+// GLOBE COMPONENT
+// ============================================
+const Globe = ({ className }) => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    let phi = 0;
+
+    if (!canvasRef.current) return;
+
+    const globe = createGlobe(canvasRef.current, {
+      devicePixelRatio: 2,
+      width: 600 * 2,
+      height: 600 * 2,
+      phi: 0,
+      theta: 0,
+      dark: 1,
+      diffuse: 1.2,
+      mapSamples: 16000,
+      mapBrightness: 6,
+      baseColor: [0.3, 0.3, 0.3],
+      markerColor: [0.1, 0.8, 1],
+      glowColor: [0.1, 0.8, 1],
+      markers: [
+        { location: [37.7595, -122.4367], size: 0.03 },
+        { location: [40.7128, -74.006], size: 0.1 },
+      ],
+      onRender: (state) => {
+        state.phi = phi;
+        phi += 0.01;
+      },
+    });
+
+    return () => {
+      globe.destroy();
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ width: 600, height: 600, maxWidth: "100%", aspectRatio: 1 }}
+      className={className}
+    />
+  );
+};
+
+// ============================================
+// FEATURES SECTION SKELETONS
+// ============================================
+const SkeletonOne = () => {
+  return (
+    <div className="relative flex py-8 px-2 gap-10 h-full">
+      <div className="w-full p-5 mx-auto bg-gray-900 shadow-2xl group h-full rounded-lg">
+        <div className="flex flex-1 w-full h-full flex-col space-y-2">
+          <img
+            src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&auto=format&fit=crop"
+            alt="header"
+            width={800}
+            height={800}
+            className="h-full w-full aspect-square object-cover object-left-top rounded-sm"
+          />
+        </div>
+      </div>
+      <div className="absolute bottom-0 z-40 inset-x-0 h-60 bg-gradient-to-t from-black via-black to-transparent w-full pointer-events-none" />
+      <div className="absolute top-0 z-40 inset-x-0 h-60 bg-gradient-to-b from-black via-transparent to-transparent w-full pointer-events-none" />
+    </div>
+  );
+};
+
+const SkeletonTwo = () => {
+  const images = [
+    "https://images.unsplash.com/photo-1517322048670-4fba75cbbb62?q=80&w=3000&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1573790387438-4da905039392?q=80&w=3425&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1555400038-63f5ba517a47?q=80&w=3540&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1554931670-4ebfabf6e7a9?q=80&w=3387&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1546484475-7f7bd55792da?q=80&w=2581&auto=format&fit=crop",
+  ];
+
+  const imageVariants = {
+    whileHover: {
+      scale: 1.1,
+      rotate: 0,
+      zIndex: 100,
+    },
+    whileTap: {
+      scale: 1.1,
+      rotate: 0,
+      zIndex: 100,
+    },
+  };
+
+  return (
+    <div className="relative flex flex-col items-start p-8 gap-10 h-full overflow-hidden">
+      <div className="flex flex-row -ml-20">
+        {images.map((image, idx) => (
+          <motion.div
+            variants={imageVariants}
+            key={`images-first-${idx}`}
+            style={{
+              rotate: Math.random() * 20 - 10,
+            }}
+            whileHover="whileHover"
+            whileTap="whileTap"
+            className="rounded-xl -mr-4 mt-4 p-1 bg-gray-900 border  shrink-0 overflow-hidden"
+          >
+            <img
+              src={image}
+              alt="bali images"
+              width="500"
+              height="500"
+              className="rounded-lg h-20 w-20 md:h-40 md:w-40 object-cover shrink-0"
+            />
+          </motion.div>
+        ))}
+      </div>
+      <div className="flex flex-row">
+        {images.map((image, idx) => (
+          <motion.div
+            key={`images-second-${idx}`}
+            style={{
+              rotate: Math.random() * 20 - 10,
+            }}
+            variants={imageVariants}
+            whileHover="whileHover"
+            whileTap="whileTap"
+            className="rounded-xl -mr-4 mt-4 p-1 bg-gray-900 border  shrink-0 overflow-hidden"
+          >
+            <img
+              src={image}
+              alt="bali images"
+              width="500"
+              height="500"
+              className="rounded-lg h-20 w-20 md:h-40 md:w-40 object-cover shrink-0"
+            />
+          </motion.div>
+        ))}
+      </div>
+      <div className="absolute left-0 z-[100] inset-y-0 w-20 bg-gradient-to-r from-black to-transparent h-full pointer-events-none" />
+      <div className="absolute right-0 z-[100] inset-y-0 w-20 bg-gradient-to-l from-black to-transparent h-full pointer-events-none" />
+    </div>
+  );
+};
+
+const SkeletonThree = () => {
+  return (
+    // <a
+    //   href="https://www.youtube.com/watch?v=RPa3_AD1_Vs"
+    //   target="_blank"
+    //   rel="noopener noreferrer"
+    //   className="relative flex gap-10 h-full group/image"
+    // >
+      <div className="w-full mx-auto bg-transparent group h-full">
+        <div className="flex flex-1 w-full h-full flex-col space-y-2 relative">
+           <img
+            src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExendqbWh5aGUxM2U1ZG4zZDU4enlsdnMxcGJmaGk0eHNnMXdnZ2w4OSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT9IgzoKnwFNmISR8I/giphy.gif"
+            alt="AI prompt to component demo"
+          className="h-full w-full aspect-square object-cover object-center rounded-sm blur-none group-hover/image:blur-md transition-all duration-200"
+          />
+        </div>
+      </div>
+    // </a>
+  );
+};
+
+const SkeletonFour = () => {
+  return (
+    <div className="h-60 md:h-60 flex flex-col items-center relative bg-transparent mt-10">
+      <Globe className="absolute -right-10 md:-right-10 -bottom-80 md:-bottom-72" />
+    </div>
+  );
+};
+
+// ============================================
+// FEATURES SECTION
+// ============================================
+const FeatureCard = ({ children, className }) => {
+  return (
+    <div className={cn("p-4 sm:p-8 relative overflow-hidden", className)}>
+      {children}
+    </div>
+  );
+};
+
+const FeatureTitle = ({ children }) => {
+  return (
+    <p className="max-w-5xl mx-auto text-left tracking-tight text-white text-xl md:text-2xl md:leading-snug font-semibold">
+      {children}
+    </p>
+  );
+};
+
+const FeatureDescription = ({ children }) => {
+  return (
+    <p
+      className={cn(
+        "text-sm md:text-base max-w-4xl text-left mx-auto",
+        "text-gray-400 font-normal",
+        "text-left max-w-sm mx-0 md:text-sm my-2"
+      )}
+    >
+      {children}
+    </p>
+  );
+};
+
+const FeaturesSection = () => {
+  const features = [
+    {
+      title: "AI-Powered UI Generation",
+      description:
+        "Turn prompts into polished UI components. GenStudio understands your intent and generates structured, reusable components",
+      skeleton: <SkeletonOne />,
+      className: "col-span-1 lg:col-span-4 border-b border-white/20 lg:border-r ",
+    },
+    {
+      title: "See What Prompts Can Build",
+      description:
+        "Turn ideas into polished UI instantly and visualize real results before using them",
+      skeleton: <SkeletonTwo />,
+      className: "border-b col-span-1 lg:col-span-2  border-white/20",
+    },
+    {
+      title: "From Idea to Interface",
+      description:
+        "Skip the code. Just write a prompt and let the app turn your idea into real UI components instantly.",
+      skeleton: <SkeletonThree />,
+      className: "col-span-1 lg:col-span-3 lg:border-r border-white/20 ",
+    },
+    {
+      title: "Deploy in seconds",
+      description:
+        "Publish your components instantly and generate a public link. Share it with anyone to preview and explore your UI in real time.",
+      skeleton: <SkeletonFour />,
+      className: "col-span-1 lg:col-span-3 border-b border-white/20 lg:border-none",
+    },
+  ];
+
+  return (
+    <div className="relative z-20 py-10 lg:py-20 max-w-6xl mx-auto bg-black px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+        className="px-8"
+      >
+        <h4 className="text-2xl lg:text-4xl lg:leading-tight max-w-5xl mx-auto text-center tracking-tight font-bold text-white">
+          Packed with thousands of features
+        </h4>
+        <p className="text-sm lg:text-base max-w-2xl my-4 mx-auto text-gray-400 text-center font-normal">
+          From Image generation to video generation, Everything AI has APIs for
+          literally everything. It can even create this website copy for you.
+        </p>
+      </motion.div>
+
+      <div className="relative">
+        <div className="grid grid-cols-1 lg:grid-cols-6 mt-8 border rounded-xl border-white/20 overflow-hidden ">
+          {features.map((feature) => (
+            <FeatureCard key={feature.title} className={feature.className}>
+              <FeatureTitle>{feature.title}</FeatureTitle>
+              <FeatureDescription>{feature.description}</FeatureDescription>
+              <div className="h-full w-full">{feature.skeleton}</div>
+            </FeatureCard>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================
+// FEATURES SECTION TWO
+// ============================================
+const Feature = ({ title, description, icon, index }) => {
+  return (
+    <div
+      className={cn(
+        "flex flex-col lg:border-r py-10 relative group/feature border-white/20",
+        (index === 0 || index === 4) && "lg:border-l border-white/20",
+        index < 4 && "lg:border-b border-white/20"
+      )}
+    >
+      {index < 4 && (
+        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-t from-gray-900 to-transparent pointer-events-none" />
+      )}
+      {index >= 4 && (
+        <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-b from-gray-900 to-transparent pointer-events-none" />
+      )}
+      <div className="mb-4 relative z-10 px-10 text-gray-400">
+        {icon}
+      </div>
+      <div className="text-lg font-bold mb-2 relative z-10 px-10">
+        <div className="absolute left-0 inset-y-0 h-6 group-hover/feature:h-8 w-1 rounded-tr-full rounded-br-full bg-gray-800 group-hover/feature:bg-blue-500 transition-all duration-200 origin-center" />
+        <span className="group-hover/feature:translate-x-2 transition duration-200 inline-block text-white">
+          {title}
+        </span>
+      </div>
+      <p className="text-sm text-gray-400 max-w-xs relative z-10 px-10">
+        {description}
+      </p>
+    </div>
+  );
+};
+
+const FeaturesSectionTwo = () => {
+  const features = [
+    {
+      title: "Prompt-to-Production",
+      description:
+        "Describe the UI and we'll build a ready-to-use component you can preview, tweak, and download.",
+      icon: <IconTerminal2 />,
+    },
+    {
+      title: "Instant Visual Preview",
+      description:
+        "Interact with components immediately and test layouts on desktop, tablet and mobile without leaving the editor.",
+      icon: <IconEaseInOut />,
+    },
+    {
+      title: "Export-Ready Code",
+      description:
+        "Download framework-ready packages or copy snippets to hand off to engineering in seconds.",
+      icon: <IconCurrencyDollar />,
+    },
+    {
+      title: "Point-and-Click Editing",
+      description:
+        "Select any element in the preview to adjust size, spacing and styles with changes reflected in the code instantly.",
+      icon: <IconAdjustmentsBolt />,
+    },
+    {
+      title: "Shareable Read-Only Links",
+      description:
+        "Publish a snapshot with one click — anyone with the link can view and comment without signing in.",
+      icon: <IconCloud />,
+    },
+    {
+      title: "Safe Iteration & History",
+      description:
+        "Automatic versioning with side-by-side diffs and easy rollbacks for confident experimentation.",
+      icon: <IconRouteAltLeft />,
+    },
+    {
+      title: "Built-in QA & Accessibility",
+      description:
+        "Responsive checks and basic accessibility guidance help you ship components that work for everyone.",
+      icon: <IconHelp />,
+    },
+    {
+      title: "Reusable Templates & Library",
+      description:
+        "Save components to a personal library, tag them, and reuse them across projects to keep designs consistent.",
+      icon: <IconHeart />,
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 relative z-10 py-10 max-w-7xl mx-auto">
+      {features.map((feature, index) => (
+        <Feature key={feature.title} {...feature} index={index} />
+      ))}
+    </div>
+  );
+};
+
+// ============================================
+// CTA SECTION
+// ============================================
+const CTASection = () => {
+  return (
+    <section className="relative py-24 bg-black overflow-hidden px-4">
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(hsl(var(--border) / 0.3) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--border) / 0.3) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, hsl(var(--border) / 0.5) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+        className="relative max-w-4xl mx-auto"
+      >
+        <div className="relative rounded-3xl overflow-hidden">
+        <div className="absolute inset-0 bg-gray-900" />
+          <div
+            className="absolute inset-0 opacity-50"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+            }}
+          />
+
+          <div className="relative z-10 py-20 px-8 text-center">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
+              Ready to build something amazing?
+            </h2>
+            <p className="text-gray-400 text-base md:text-lg mb-8 max-w-xl mx-auto">
+              Get instant access to our state of the art platform and start
+              building today.
+            </p>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-6 py-3 border border-white/20 text-white text-sm font-medium rounded-full hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-colors"
+            >
+              Get Started
+            </motion.button>
+          </div>
+        </div>
+      </motion.div>
+    </section>
+  );
+};
+
+// ============================================
+// FOOTER
+// ============================================
+const Footer = () => {
+  return (
+    <footer className="bg-black py-12 relative border-t border-white/20">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="flex flex-col lg:flex-row justify-between gap-12 mb-16">
+          <div className="lg:max-w-xs">
+            <div className="flex items-center space-x-2 mb-4">
+              <div className="w-8 h-8 bg-blue-500 rounded-lg" />
+              <span className="text-white font-semibold text-lg">
+                GenUI Studio
+              </span>
+            </div>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              Building the future of development with cutting-edge tools and
+              seamless experiences.
             </p>
           </div>
 
-          <div className="hero-buttons flex flex-col sm:flex-row gap-8 justify-center mb-24">
-            {isLoggedIn ? (
-              <button
-                type="button"
-                onClick={() => navigate('/chat')}
-                className="group relative bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-10 py-5 rounded-2xl font-bold text-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative z-10 flex items-center justify-center">
-                  Start Creating
-                  <Rocket className="w-6 h-6 ml-3 transition-all duration-300 group-hover:translate-x-1 group-hover:scale-110" />
-                </div>
-                <div className="absolute inset-0 border border-cyan-400/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </button>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={() => navigate('/signup')}
-                  className="group relative bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-10 py-5 rounded-2xl font-bold text-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative z-10 flex items-center justify-center">
-                    Start Creating
-                    <Rocket className="w-6 h-6 ml-3 transition-all duration-300 group-hover:translate-x-1 group-hover:scale-110" />
-                  </div>
-                  <div className="absolute inset-0 border border-cyan-400/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate('/login')}
-                  className="group relative border-2 border-cyan-500/50 bg-transparent text-cyan-400 px-10 py-5 rounded-2xl font-bold text-xl hover:bg-cyan-500/10 transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 backdrop-blur-sm"
-                >
-                  <span className="flex items-center justify-center">
-                    Sign In
-                    <ArrowRight className="w-6 h-6 ml-3 transition-all duration-300 group-hover:translate-x-1 group-hover:scale-110" />
-                  </span>
-                  <div className="absolute inset-0 border border-cyan-400/30 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                </button>
-              </>
-            )}
-          </div>
-
-          {/* Enhanced Stats with neon glow */}
-          <div className="stats-section grid grid-cols-1 sm:grid-cols-3 gap-12 max-w-4xl mx-auto">
-            <div className="stat-item text-center group">
-              <div className="relative p-6 rounded-2xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-cyan-500/20 hover:border-cyan-400/40 transition-all duration-300">
-                <div className="text-5xl md:text-6xl font-black bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent mb-3">
-                  10k+
-                </div>
-                <div className="text-sm font-bold text-gray-400 uppercase tracking-wider">
-                  Components Generated
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-blue-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 lg:gap-16">
+            <div>
+              <h3 className="text-gray-400 font-medium text-sm mb-4 uppercase tracking-wider">
+                Product
+              </h3>
+              <ul className="space-y-3">
+                {["Features", "Pricing", "API", "Docs"].map((item) => (
+                  <li key={item}>
+                    <a
+                      href="#"
+                      className="text-gray-400 hover:text-white text-sm transition-colors"
+                    >
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <div className="stat-item text-center group">
-              <div className="relative p-6 rounded-2xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-purple-500/20 hover:border-purple-400/40 transition-all duration-300">
-                <div className="text-5xl md:text-6xl font-black bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-3">
-                  500+
-                </div>
-                <div className="text-sm font-bold text-gray-400 uppercase tracking-wider">
-                  Happy Developers
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-pink-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </div>
+            <div>
+              <h3 className="text-gray-400 font-medium text-sm mb-4 uppercase tracking-wider">
+                Company
+              </h3>
+              <ul className="space-y-3">
+                {["About", "Blog", "Careers", "Contact"].map((item) => (
+                  <li key={item}>
+                    <a
+                      href="#"
+                      className="text-gray-400 hover:text-white text-sm transition-colors"
+                    >
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <div className="stat-item text-center group">
-              <div className="relative p-6 rounded-2xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl border border-emerald-500/20 hover:border-emerald-400/40 transition-all duration-300">
-                <div className="text-5xl md:text-6xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-3">
-                  99%
-                </div>
-                <div className="text-sm font-bold text-gray-400 uppercase tracking-wider">
-                  Code Quality
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </div>
+            <div>
+              <h3 className="text-gray-400 font-medium text-sm mb-4 uppercase tracking-wider">
+                Legal
+              </h3>
+              <ul className="space-y-3">
+                {["Privacy", "Terms", "Security"].map((item) => (
+                  <li key={item}>
+                    <a
+                      href="#"
+                      className="text-gray-400 hover:text-white text-sm transition-colors"
+                    >
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
 
-        {/* Clean Feature Cards with Framer Motion */}
-        <motion.div 
-          ref={cardsRef}
-          className="py-32 max-w-7xl mx-auto"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-        >
-          <div className="grid md:grid-cols-3 gap-8">
-            {cardData.map((card, index) => {
-              const Icon = card.icon;
-              return (
-                <motion.div
-                  key={index}
-                  variants={cardVariants}
-                  initial="rest"
-                  whileHover="hover"
-                  className="group cursor-pointer"
-                >
-                  <div className="relative h-full">
-                    {/* Clean background with subtle border */}
-                    <div className="relative h-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 transition-all duration-500 group-hover:bg-white/8 group-hover:border-white/20 overflow-hidden">
-                      
-                      {/* Subtle gradient overlay on hover */}
-                      <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500 rounded-2xl`}></div>
-                      
-                      {/* Content */}
-                      <div className="relative z-10 h-full flex flex-col">
-                        
-                        {/* Icon with clean animation */}
-                        <motion.div 
-                          className="mb-6"
-                          variants={iconVariants}
-                        >
-                          <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shadow-lg`}>
-                            <Icon className="w-8 h-8 text-white" />
-                          </div>
-                        </motion.div>
-
-                        {/* Title */}
-                        <h3 className="text-2xl font-bold text-white mb-4 group-hover:text-white/90 transition-colors duration-300">
-                          {card.title}
-                        </h3>
-
-                        {/* Description */}
-                        <p className="text-gray-400 leading-relaxed text-base group-hover:text-gray-300 transition-colors duration-300 flex-grow">
-                          {card.description}
-                        </p>
-
-                        {/* Subtle bottom accent */}
-                        <motion.div 
-                          className={`mt-6 h-1 rounded-full bg-gradient-to-r ${card.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
-                          initial={{ scaleX: 0 }}
-                          whileInView={{ scaleX: 1 }}
-                          transition={{ duration: 0.8, delay: index * 0.2 }}
-                        />
-                      </div>
-
-                      {/* Subtle glow effect on hover */}
-                      <div className={`absolute -inset-0.5 bg-gradient-to-r ${card.gradient} rounded-2xl blur opacity-0 group-hover:opacity-20 transition-opacity duration-500 -z-10`}></div>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
-
-        {/* Enhanced Dark CTA Section */}
-        <div className="text-center py-32">
-          <div className="max-w-5xl mx-auto relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-purple-500/20 to-blue-500/20 rounded-3xl blur-3xl animate-pulse"></div>
-            <div className="relative z-10 p-16 rounded-3xl bg-gradient-to-br from-slate-800/10 to-slate-900/10 backdrop-blur-2xl border border-slate-700/50 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-purple-500/5 to-blue-500/5"></div>
-              <div className="relative z-10">
-                <h2 className="text-4xl md:text-5xl font-bold mb-8 leading-tight text-white">
-                  Ready to <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">build faster</span>?
-                </h2>
-                <p className="text-xl text-gray-300 mb-16 font-normal leading-relaxed">
-                  Join developers who've already saved hours with AI-generated components.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-8 justify-center">
-                  {isLoggedIn ? (
-                    <button
-                      type="button"
-                      onClick={() => navigate('/chat')}
-                      className="group relative bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-12 py-6 rounded-2xl font-bold text-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 inline-flex items-center justify-center overflow-hidden"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      <span className="relative z-10 flex items-center">
-                        Start Building Now
-                        <Rocket className="w-6 h-6 ml-3 transition-all duration-300 group-hover:translate-x-1 group-hover:scale-110" />
-                      </span>
-                    </button>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => navigate('/signup')}
-                        className="group relative bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-12 py-6 rounded-2xl font-bold text-xl transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 inline-flex items-center justify-center overflow-hidden"
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <span className="relative z-10 flex items-center">
-                          Start Building Now
-                          <Rocket className="w-6 h-6 ml-3 transition-all duration-300 group-hover:translate-x-1 group-hover:scale-110" />
-                        </span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => navigate('/login')}
-                        className="group relative border-2 border-cyan-500/50 bg-transparent text-cyan-400 px-12 py-6 rounded-2xl font-bold text-xl hover:bg-cyan-500/10 transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 inline-flex items-center justify-center backdrop-blur-sm"
-                      >
-                        <span className="flex items-center">
-                          Sign In
-                          <ArrowRight className="w-6 h-6 ml-3 transition-all duration-300 group-hover:translate-x-1 group-hover:scale-110" />
-                        </span>
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
+        <div className="border-t border-white/20 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-gray-400 text-xs">
+            © 2024 GenUI Studio. All rights reserved.
+          </p>
+          <div className="flex items-center gap-6">
+            <a
+              href="#"
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
+              </svg>
+            </a>
+            <a
+              href="#"
+              className="text-gray-400 hover:text-white transition-colors"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  fillRule="evenodd"
+                  d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </a>
           </div>
         </div>
       </div>
+    </footer>
+  );
+};
 
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          25% { transform: translateY(-10px) rotate(1deg); }
-          50% { transform: translateY(-20px) rotate(0deg); }
-          75% { transform: translateY(-10px) rotate(-1deg); }
-        }
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-      `}</style>
+// ============================================
+// MAIN LANDING PAGE COMPONENT
+// ============================================
+const Home = () => {
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const t = Boolean(localStorage.getItem("accessToken"));
+    setIsLoggedIn(t);
+  }, []);
+
+  const handlePromptSubmit = (prompt) => {
+    if (!prompt.trim()) return;
+
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+
+    navigate("/chat", { state: { initialPrompt: prompt } });
+  };
+
+  return (
+    <div className="bg-black min-h-screen">
+      <HeroParallax onPromptSubmit={handlePromptSubmit} />
+      <FeaturesSection />
+      <section className="bg-black py-10">
+        <FeaturesSectionTwo />
+      </section>
+      <CTASection />
+      <Footer />
     </div>
   );
 };
