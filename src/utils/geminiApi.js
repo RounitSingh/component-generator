@@ -441,7 +441,7 @@ Always output exactly one jsx block and one css block. Never output plain text o
 // Use these libraries to create amazing, interactive components with smooth animations, proper form handling, and beautiful styling.`;
 
   const response = await axios.post(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
     {
       contents: [
         {

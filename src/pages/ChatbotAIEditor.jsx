@@ -1,7 +1,7 @@
 
 
 import React, { useRef, useState, useEffect, useCallback, memo, lazy, Suspense } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Send, Image as ImageIcon, Loader2, StarsIcon, X, Plus, Menu, EllipsisVertical, Eye, Code } from 'lucide-react';
 import DownloadButton from '../components/DownloadButton';
 import useDownloadStore from '../store/downloadStore';
@@ -43,6 +43,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/
 
 const ChatbotAIEditor = memo(() => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { id: routeConversationId } = useParams();
     const { user, logout } = useAuthStore();
     const {
@@ -87,6 +88,8 @@ const ChatbotAIEditor = memo(() => {
     const [initializing, setInitializing] = useState(false);
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [isDataReady, setIsDataReady] = useState(false);
+    const [autoPrompt, setAutoPrompt] = useState(null);
+    const [autoSendPending, setAutoSendPending] = useState(false);
 
     const fileInputRef = useRef(null);
     const upsertConversation = useChatListStore((s) => s.upsertConversation);
@@ -228,6 +231,17 @@ const ChatbotAIEditor = memo(() => {
             abortController.abort();
         };
     }, [setMessages, createAbortController, navigate, logout, setDownloadCode, routeConversationId, user?.id]);
+
+    // Pick up an initial prompt passed from the Home page and prepare auto-send
+    useEffect(() => {
+        if (!isDataReady || initializing) return;
+        const initialPrompt = location.state && location.state.initialPrompt;
+        if (initialPrompt && !autoPrompt) {
+            setAutoPrompt(initialPrompt);
+            setUserPrompt(initialPrompt);
+            setAutoSendPending(true);
+        }
+    }, [location.state, isDataReady, initializing, autoPrompt]);
 
     const handleSend = useCallback(async () => {
         if (!userPrompt.trim() && !image) return;
@@ -412,6 +426,14 @@ const ChatbotAIEditor = memo(() => {
             setImage(null);
         }
     }, [userPrompt, image, editMode, selectedElement, createAbortController, conversationId, validateSelectedElement, addMessage, messages.length, code.jsx, code.css, isElementSelectionValid, promptText, setDownloadCode, upsertConversation, components, updateComponent, setCurrentComponent, addComponent]);
+
+    // Once the auto prompt is set into userPrompt, send it exactly once
+    useEffect(() => {
+        if (!autoSendPending || !autoPrompt) return;
+        if (userPrompt !== autoPrompt) return;
+        handleSend();
+        setAutoSendPending(false);
+    }, [autoSendPending, autoPrompt, userPrompt, handleSend]);
 
     const handleKeyDown = useCallback((e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
