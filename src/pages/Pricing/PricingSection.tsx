@@ -87,7 +87,7 @@ import { motion } from "framer-motion";
 
 const PricingSection = () => {
   return (
-    <section className="max-h-screen bg-neutral-950 px-4 py-8 sm:py-16">
+    <section className="h-screen bg-neutral-950 px-4 py-8 sm:py-16">
       <div className="mx-auto max-w-6xl w-full">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
