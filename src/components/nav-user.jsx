@@ -255,8 +255,11 @@ console.log('User in NavUser:', user);
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuGroup >
-              <DropdownMenuItem className="hover:bg-black/40">
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                onClick={() => navigate('/pricing')}
+                className="hover:bg-black/40 cursor-pointer"
+              >
                 <Sparkles />
                 Upgrade to Pro
               </DropdownMenuItem>

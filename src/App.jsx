@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, Outlet } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -15,6 +15,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import useAuthStore from './store/authStore';
 import { getProfile } from './utils/api';
 import { useEffect } from 'react';
+import PricingPage from './pages/Pricing/PricingPage';
 
 const App = () => {
   const { setUser, logout } = useAuthStore();
@@ -57,10 +58,18 @@ const App = () => {
           <Route path="/signup" element={<Signup />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<LayoutWithSidebar><Dashboard /></LayoutWithSidebar>} />
-            <Route path="/chat" element={<LayoutWithSidebar><ChatbotAIEditor /></LayoutWithSidebar>} />
-            <Route path="/chat/:id" element={<LayoutWithSidebar><ChatbotAIEditor /></LayoutWithSidebar>} />
+
+            <Route path="/chat" element={<LayoutWithSidebar><Outlet /></LayoutWithSidebar>}>
+              <Route index element={<ChatbotAIEditor />} />
+              <Route path=":id" element={<ChatbotAIEditor />} />
+              {/* <Route path=":id/pricing" element={<PricingPage />} /> */}
+            </Route>
+
+            <Route path="/pricing" element={<LayoutWithSidebar><PricingPage /></LayoutWithSidebar>} />
+
             <Route path="/chat-history" element={<LayoutWithSidebar><ChatHistory /></LayoutWithSidebar>} />
-           </Route>
+          </Route>
+           
           <Route path="/share/:slug" element={<SharedViewer />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

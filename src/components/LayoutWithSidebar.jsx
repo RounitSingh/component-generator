@@ -24,7 +24,7 @@ export default function LayoutWithSidebar({ children }) {
   return (
     <SidebarProvider defaultOpen={false}>
       <AppSidebar />
-    <SidebarInset className={`flex w-full flex-col overflow-hidden ${isMobile ? 'h-[100dvh]' : 'h-screen'}`}>
+    <SidebarInset className={`flex w-full flex-col ${isMobile ? 'h-[100dvh]' : 'h-screen'}`}>
         {isMobile && (
           <SidebarHeader className="bg-[#2A2A2A] border-b border-b-neutral-700 flex-shrink-0">
             <div className="flex items-center justify-between text-white/60">
@@ -51,7 +51,10 @@ export default function LayoutWithSidebar({ children }) {
         )}
 
       
-        <div className={`flex-1 min-h-0 ${isMobile ? 'overflow-hidden' : 'overflow-x-hidden'}`}>
+        <div
+          className={`flex-1 min-h-0 ${isMobile ? 'overflow-auto' : 'overflow-x-hidden'}`}
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
           {children}
         </div>
       </SidebarInset>
