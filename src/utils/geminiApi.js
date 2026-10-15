@@ -436,7 +436,7 @@ Always output exactly one jsx block and one css block. Never output plain text o
 //   border-radius: 8px;
 //   padding: 16px;
 // }
-// \`\`\`
+
 
 // Use these libraries to create amazing, interactive components with smooth animations, proper form handling, and beautiful styling.`;
 
