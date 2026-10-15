@@ -461,13 +461,13 @@ Always output exactly one jsx block and one css block. Never output plain text o
 
   // Tried in order. A model that is overloaded (503) is skipped for the next one.
   const models = [
-    'gemini-3.5-flash',
-    'gemini-3.8-flash',
+    // 'gemini-3.5-flash',
+    // 'gemini-3.8-flash',
     'gemini-2.5-flash',
     'gemini-3.7-flash',
-    'gemini-3-flash-preview',
-    'gemini-flash-latest',
-    'gemini-2.5-flash-lite',
+    // 'gemini-3-flash-preview',
+    // 'gemini-flash-latest',
+    // 'gemini-2.5-flash-lite',
   ];
   const attemptsPerModel = 2;
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
