@@ -262,7 +262,7 @@ const Navbar = () => {
             <Link to="/" className="flex items-center gap-3 group transition-all duration-300 ">
               <div className="relative">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg group-hover:shadow-cyan-500/25 transition-all duration-300">
-                  <StarsIcon className="h-7 w-7 text-white" />
+                  
                 </div>
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-sm"></div>
               </div>
