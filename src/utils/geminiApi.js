@@ -490,6 +490,7 @@ Always output exactly one jsx block and one css block. Never output plain text o
   for (const model of models) {
     for (let attempt = 0; attempt < attemptsPerModel; attempt++) {
       try {
+        console.log(`[Gemini] Trying model: ${model} (attempt ${attempt + 1}/${attemptsPerModel})`);
         const response = await axios.post(
           `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
           body,
@@ -501,11 +502,18 @@ Always output exactly one jsx block and one css block. Never output plain text o
           lastError = new Error(
             `${model} returned no code block (finishReason: ${response.data?.candidates?.[0]?.finishReason})`
           );
+          console.warn(`[Gemini] ${model} returned no code block, trying next model`);
           break;
         }
+        console.log(
+          `[Gemini] Response received from model: ${response.data?.modelVersion || model}`
+        );
         return text;
       } catch (error) {
         lastError = error;
+        console.warn(
+          `[Gemini] ${model} failed (${error.response?.status || error.code || error.message})`
+        );
         if (!isRetryable(error)) throw error;
         if (attempt < attemptsPerModel - 1) await sleep(1500 * (attempt + 1));
       }
