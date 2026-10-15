@@ -440,28 +440,81 @@ Always output exactly one jsx block and one css block. Never output plain text o
 
 // Use these libraries to create amazing, interactive components with smooth animations, proper form handling, and beautiful styling.`;
 
-  const response = await axios.post(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent',
-    {
-      contents: [
-        {
-          parts: [
-            { text: systemPrompt },
-            { text: promptText },
-            ...imagePart,
-          ],
-        },
-      ],
-    },
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-goog-api-key': apiKey,
+  const body = {
+    contents: [
+      {
+        parts: [
+          { text: systemPrompt },
+          { text: promptText },
+          ...(imagePart || []),
+        ],
       },
+    ],
+  };
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+      'X-goog-api-key': apiKey,
+    },
+    timeout: 60000,
+  };
+
+  // Tried in order. A model that is overloaded (503) is skipped for the next one.
+  const models = [
+    'gemini-3.5-flash',
+    'gemini-3.8-flash',
+    'gemini-2.5-flash',
+    'gemini-3.7-flash',
+    'gemini-3-flash-preview',
+    'gemini-flash-latest',
+    'gemini-2.5-flash-lite',
+  ];
+  const attemptsPerModel = 2;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const isRetryable = (error) => {
+    const status = error.response?.status;
+    // No status = network error / timeout
+    return !status || [429, 500, 502, 503, 504].includes(status);
+  };
+
+  // Join every non-thought text part (the first part is not always the text)
+  const extractText = (data) => {
+    const parts = data?.candidates?.[0]?.content?.parts || [];
+    return parts
+      .filter((p) => typeof p.text === 'string' && !p.thought)
+      .map((p) => p.text)
+      .join('');
+  };
+
+  let lastError;
+  for (const model of models) {
+    for (let attempt = 0; attempt < attemptsPerModel; attempt++) {
+      try {
+        const response = await axios.post(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+          body,
+          config
+        );
+        const text = extractText(response.data);
+        // Empty or code-less answers are treated as a failure so the next model gets a turn
+        if (!text.includes('```')) {
+          lastError = new Error(
+            `${model} returned no code block (finishReason: ${response.data?.candidates?.[0]?.finishReason})`
+          );
+          break;
+        }
+        return text;
+      } catch (error) {
+        lastError = error;
+        if (!isRetryable(error)) throw error;
+        if (attempt < attemptsPerModel - 1) await sleep(1500 * (attempt + 1));
+      }
     }
-  );
-  return (
-    response.data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response'
+  }
+
+  throw new Error(
+    'Gemini is busy right now. Please try again in a few seconds.',
+    { cause: lastError }
   );
 };
 
